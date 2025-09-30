@@ -1,5 +1,6 @@
-import { User } from "@clerk/express";
 import { Inngest } from "inngest";
+import  User  from "../models/User.js";
+
 
 
 // Create a client to send and receive events
@@ -57,4 +58,4 @@ export const functions = [
     syncUserCreation, 
     syncUserDeletion,
     syncUserUpdation
-];
+]; 
