@@ -7,10 +7,12 @@ const Layout = () => {
   return (
    <>
     <AdminNavbar />
-    <div className='flex'>
+    <div className='flex '>
         <AdminSidebar />
-        <div className='flex-1 px-4 py-10 md:px-10 h-[calc(100vh-64vh)] overflow-y-auto'>
-            <Outlet />
+        <div className='flex-1 px-6 py-8 md:px-12 lg:px-16 h-[calc(100vh-64px)] overflow-y-auto'>
+            <div className='max-w-7xl mx-auto'>
+                <Outlet />
+            </div>
         </div>
     </div>
    </>

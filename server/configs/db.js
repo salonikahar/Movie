@@ -2,10 +2,13 @@ import mongoose from "mongoose";
 
 const connectDB = async () =>{
     try {
-        mongoose.connection.on('connected', () => console.log('Database Connected'));
-        await mongoose.connect(`${process.env.MONGODB_URI}/bookmyscreen`)
+        // Use provided URI or default
+        const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bookmyscreen';
+        mongoose.connection.on('connected', () => console.log('✅ Database Connected'));
+        await mongoose.connect(mongoURI);
+        console.log(`📦 Connected to MongoDB: ${mongoURI}`);
     } catch (error) {
-        console.log(error.message);
+        console.log('❌ Database connection error:', error.message);
     }
 }
 

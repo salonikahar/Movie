@@ -14,12 +14,45 @@ const MovieDetails = () => {
   const [show, setShow] = useState(null)
 
   const getShow = async ()=>{
-    const show = dummyShowsData.find(show => show._id === id)
-    if(show){
-      setShow({
-      movie: show,
-      dateTime: dummyDateTimeData
-    })
+    try {
+      const response = await fetch('/api/movies');
+      const data = await response.json();
+      if (data.success) {
+        const movie = data.movies.find(m => m._id === id);
+        if (movie) {
+          // Fetch shows for dateTime
+          const showResponse = await fetch('/api/shows');
+          const showData = await showResponse.json();
+          if (showData.success) {
+            const shows = showData.shows.filter(show => {
+              // show.movie may be populated (object) or be a string id — normalize to id string
+              const movieId = typeof show.movie === 'string' ? show.movie : show.movie?._id;
+              return movieId === id;
+            });
+            const dateTimeObj = {};
+            shows.forEach(show => {
+              const date = new Date(show.showDateTime).toLocaleDateString('sv-SE');
+              if (!dateTimeObj[date]) dateTimeObj[date] = [];
+              dateTimeObj[date].push({
+                time: show.showDateTime,
+                showId: show._id,
+                theaterId: show.theater
+              });
+            });
+            setShow({
+              movie: movie,
+              dateTime: dateTimeObj
+            });
+          } else {
+            setShow({
+              movie: movie,
+              dateTime: {} // No shows available
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching movie or shows:', error);
     }
   }
 
@@ -53,8 +86,7 @@ useEffect(()=>{
               <PlayCircleIcon className="w-5 h-5"/>
               Watch Trailer
               </button>
-            <a href="#dateSelect" className='px-10 py-3 text-sm bg-primary hover:bg-priamry-dull 
-            transition rounded-md font-medium cursor-pointer active:scale-95'>Buy Tickets</a>
+            <button onClick={() => navigate(`/movies/${id}/theater`)} className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95'>Buy Tickets</button>
             <button className='bg-gray-700 p-2.5 rounded-full transition cursor-pointe active:scale-95'>
               <Heart className={`w-5 h-5`}/> 
             </button>
@@ -74,7 +106,7 @@ useEffect(()=>{
         </div>
       </div>
       
-      <DateSelect dateTime={show.dateTime} id={id} />
+      <DateSelect dateTime={show.dateTime} id={id} onDateSelect={(date) => navigate(`/movies/${id}/theater`)} />
 
       <p className='text-lg font-medium mt-20 mb-8'>You May Also Like</p>
       <div className='flex flex-wrap max-sm:justify-center gap-8'>

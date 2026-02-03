@@ -1,11 +1,11 @@
 import { ChartLineIcon, IndianRupeeIcon, PlayCircleIcon, StarIcon, UsersIcon } from 'lucide-react';
 import { useEffect } from 'react';
-import { dummyDashboardData } from '../../assets/assets';
 import Title from '../../components/admin/Title';
 import { useState } from 'react';
 import Loading from '../../components/Loading';
 import BlurCircle from '../../components/BlurCircle';
 import { dateFormat } from '../../lib/dateFormat';
+import toast from 'react-hot-toast';
 
 
 
@@ -32,8 +32,25 @@ const Dashboard = () => {
 
 
     const fetchDashboardData = async () => {
-        setDashboardData(dummyDashboardData)
-        setLoading(false)
+        try {
+            const response = await fetch('/api/admin/dashboard')
+            const result = await response.json()
+            if (result.success) {
+                setDashboardData({
+                    totalBookings: result.stats.totalBookings,
+                    totalRevenue: result.stats.totalRevenue,
+                    activeShows: result.stats.activeShows,
+                    totalUser: result.stats.totalUsers
+                })
+            } else {
+                toast.error('Failed to fetch dashboard data')
+            }
+        } catch (error) {
+            console.error(error)
+            toast.error('Failed to fetch dashboard data')
+        } finally {
+            setLoading(false)
+        }
     };
 
 

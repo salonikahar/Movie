@@ -1,10 +1,36 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { dummyShowsData } from '../assets/assets'
 import MovieCard from '../components/MovieCard'
 import BlurCircle from '../components/BlurCircle'
+import Loading from '../components/Loading'
 
 const Movies = () => {
-  return dummyShowsData.length > 0 ?  (
+  const [movies, setMovies] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await fetch('/api/movies');
+        const data = await response.json();
+        if (data.success) {
+          setMovies(data.movies);
+        } else {
+          setMovies(dummyShowsData); // Fallback to dummy
+        }
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+        setMovies(dummyShowsData); // Fallback to dummy
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMovies();
+  }, []);
+
+  if (loading) return <Loading />;
+
+  return movies.length > 0 ?  (
     <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44
      overflow-hidden min-h-[80vh]'>
 
@@ -13,7 +39,7 @@ const Movies = () => {
 
       <h1 className='text-lg font-medium my-4'>Now Showing</h1>
       <div className='flex flex-wrap max-sm:justify-center gap-8'>
-        {dummyShowsData.map((movie)=> (
+        {movies.map((movie)=> (
           <MovieCard movie={movie} key={movie._id} />
         ))}
       </div>
