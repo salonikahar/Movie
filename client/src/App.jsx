@@ -12,6 +12,7 @@ import MyBookings from './pages/MyBookings'
 import Profile from './pages/Profile'
 import Invoice from './pages/Invoice'
 import Favorite from './pages/favorite'
+import Releases from './pages/Releases'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import { Toaster } from 'react-hot-toast'
@@ -57,6 +58,7 @@ const App = () => {
           </UserProtectedRoute>
         } />
         <Route path='/theaters' element={<Theaters/>} />
+        <Route path='/releases' element={<Releases/>} />
         <Route path='/my-bookings' element={
           <UserProtectedRoute>
             <MyBookings/>

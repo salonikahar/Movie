@@ -6,6 +6,8 @@ import { User, Mail, Phone, Calendar } from 'lucide-react'
 const ListUsers = () => {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 9
 
     const getAllUsers = async () => {
         try {
@@ -27,13 +29,28 @@ const ListUsers = () => {
         getAllUsers()
     }, [])
 
+    const totalPages = Math.max(1, Math.ceil(users.length / pageSize))
+    const pageStart = (currentPage - 1) * pageSize
+    const pageUsers = users.slice(pageStart, pageStart + pageSize)
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages)
+        }
+    }, [totalPages, currentPage])
+
     return !loading ? (
         <>
             <Title text1="List" text2="Users" />
             <div className='max-w-6xl mt-6'>
                 {users.length > 0 ? (
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                        {users.map((user) => (
+                    <>
+                        <div className='flex items-center justify-between text-sm text-gray-400 mb-4'>
+                            <span>Showing {pageStart + 1}-{Math.min(pageStart + pageSize, users.length)} of {users.length}</span>
+                            <span>Page {currentPage} of {totalPages}</span>
+                        </div>
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                        {pageUsers.map((user) => (
                             <div key={user._id} className='bg-primary/10 border border-primary/20 rounded-lg p-6'>
                                 <div className='flex items-center gap-4 mb-4'>
                                     {user.image ? (
@@ -68,7 +85,38 @@ const ListUsers = () => {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                        </div>
+                        <div className='flex items-center justify-center gap-2 mt-6'>
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                First
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Prev
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Next
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Last
+                            </button>
+                        </div>
+                    </>
                 ) : (
                     <div className='text-center py-12'>
                         <p className='text-gray-400 text-lg'>No users found</p>

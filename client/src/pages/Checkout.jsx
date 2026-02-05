@@ -61,10 +61,8 @@ const Checkout = () => {
       // Load Razorpay script
       const razorpayLoaded = await loadRazorpayScript()
       if (!razorpayLoaded) {
-        // If SDK failed to load, give a dev-friendly fallback: allow simulated payment
-        toast.error('Razorpay SDK failed to load — falling back to simulated payment')
-        const proceed = window.confirm('Razorpay failed to load — proceed with a simulated payment (dev only)?')
-        if (!proceed) return
+        toast.error('Razorpay SDK failed to load. Please check your connection and try again.')
+        return
       }
 
       const token = localStorage.getItem('userToken')
@@ -87,6 +85,14 @@ const Checkout = () => {
         })
       })
 
+      if (orderResponse.status === 401) {
+        localStorage.removeItem('userToken')
+        localStorage.removeItem('userData')
+        toast.error('Session expired. Please sign in again.')
+        navigate('/sign-in')
+        return
+      }
+
       const orderData = await orderResponse.json()
       if (!orderData.success) {
         console.error('Order creation failed', orderData)
@@ -94,8 +100,14 @@ const Checkout = () => {
         return
       }
 
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID
+      if (!razorpayKey) {
+        toast.error('Razorpay key missing. Set VITE_RAZORPAY_KEY_ID in client/.env')
+        return
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag', // Replace with your Razorpay key
+        key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
         name: 'BookMyScreen',
@@ -117,6 +129,14 @@ const Checkout = () => {
               bookedSeats: bookingData.selectedSeats
             })
           })
+
+          if (verifyResponse.status === 401) {
+            localStorage.removeItem('userToken')
+            localStorage.removeItem('userData')
+            toast.error('Session expired. Please sign in again.')
+            navigate('/sign-in')
+            return
+          }
 
           let verifyData
           try {
@@ -157,48 +177,8 @@ const Checkout = () => {
         }
       }
 
-      // If SDK didn't load, window.Razorpay may not exist. If so, perform a simulated verify
-      if (window.Razorpay) {
-        const razorpay = new window.Razorpay(options)
-        razorpay.open()
-      } else {
-        // Simulate the handler callback because SDK couldn't be used
-        try {
-          const fakeResp = {
-            razorpay_order_id: orderData.order.id,
-            razorpay_payment_id: `pay_sim_${Date.now()}`,
-            razorpay_signature: 'simulated_signature'
-          }
-
-          // Call verify endpoint directly
-          const verifyResponse = await fetch('/api/payments/razorpay/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              razorpayOrderId: fakeResp.razorpay_order_id,
-              razorpayPaymentId: fakeResp.razorpay_payment_id,
-              razorpaySignature: fakeResp.razorpay_signature,
-              showId: bookingData.showId,
-              bookedSeats: bookingData.selectedSeats
-            })
-          })
-
-          const verifyData = await verifyResponse.json()
-          if (verifyData.success) {
-            toast.success('Payment (simulated) successful! Booking confirmed.')
-            navigate(`/invoice/${verifyData.booking.bookingId}`)
-            return
-          }
-          console.error('Simulated payment verify failed', verifyData)
-          toast.error(verifyData.message || 'Payment verification failed')
-        } catch (err) {
-          console.error('Simulated verify error', err)
-          toast.error('Payment verification failed (simulated)')
-        }
-      }
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
     } catch (error) {
       console.error('Razorpay error:', error)
       toast.error('Payment failed. Please try again.')
@@ -314,3 +294,4 @@ const Checkout = () => {
 }
 
 export default Checkout
+

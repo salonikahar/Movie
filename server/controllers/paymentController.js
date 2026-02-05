@@ -9,6 +9,7 @@ export const createRazorpayOrder = async (req, res) => {
     try {
         const { showId, bookedSeats } = req.body;
         const userId = req.userId;
+        console.log('createRazorpayOrder - request', { showId, seats: bookedSeats?.length, userId });
 
         // Find the show to get the price
         // Some environments have mixed _id types for Show (string ids and ObjectIds).
@@ -28,6 +29,10 @@ export const createRazorpayOrder = async (req, res) => {
             return res.json({ success: false, message: 'Show not found' });
         }
 
+        if (!Array.isArray(bookedSeats) || bookedSeats.length === 0) {
+            return res.json({ success: false, message: 'Please select at least one seat' });
+        }
+
         // Calculate amount
         const amount = show.showPrice * bookedSeats.length;
         const amountInPaise = Math.round(amount * 100); // Razorpay expects amount in paise
@@ -35,40 +40,37 @@ export const createRazorpayOrder = async (req, res) => {
         // If Razorpay keys are configured, call Razorpay orders API
         const keyId = process.env.RAZORPAY_KEY_ID
         const keySecret = process.env.RAZORPAY_SECRET
+        console.log('createRazorpayOrder - keys present', { keyId: Boolean(keyId), keySecret: Boolean(keySecret) });
 
-        if (keyId && keySecret) {
-            try {
-                const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64')
-                const payload = {
-                    amount: amountInPaise,
-                    currency: 'INR',
-                    receipt: `receipt_${Date.now()}`,
-                    payment_capture: 1
-                }
-                const resp = await axios.post('https://api.razorpay.com/v1/orders', payload, {
-                    headers: {
-                        Authorization: `Basic ${auth}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                return res.json({ success: true, order: resp.data })
-            } catch (err) {
-                console.error('Razorpay order creation failed:', err?.response?.data || err.message || err)
-                // fallback to simulated order
-            }
+        if (!keyId || !keySecret) {
+            return res.json({ success: false, message: 'Razorpay keys are not configured on the server' });
         }
 
-        // Fallback simulated order
-        const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        res.json({
-            success: true,
-            order: {
-                id: orderId,
+        try {
+            const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64')
+            const payload = {
                 amount: amountInPaise,
                 currency: 'INR',
-                receipt: `receipt_${Date.now()}`
+                receipt: `receipt_${Date.now()}`,
+                payment_capture: 1
             }
-        });
+            console.log('createRazorpayOrder - calling Razorpay orders API', { amountInPaise });
+            const resp = await axios.post('https://api.razorpay.com/v1/orders', payload, {
+                headers: {
+                    Authorization: `Basic ${auth}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            console.log('createRazorpayOrder - Razorpay order created', { id: resp.data?.id, amount: resp.data?.amount });
+            return res.json({ success: true, order: resp.data })
+        } catch (err) {
+            console.error('Razorpay order creation failed:', {
+                status: err?.response?.status,
+                data: err?.response?.data,
+                message: err?.message
+            })
+            return res.json({ success: false, message: 'Failed to create Razorpay order. Check server keys and Razorpay API status.' })
+        }
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -79,6 +81,14 @@ export const verifyRazorpayPayment = async (req, res) => {
     try {
         const { razorpayOrderId, razorpayPaymentId, razorpaySignature, showId, bookedSeats } = req.body;
         const userId = req.userId;
+        console.log('verifyRazorpayPayment - request', {
+            razorpayOrderId,
+            razorpayPaymentId,
+            hasSignature: Boolean(razorpaySignature),
+            showId,
+            seats: bookedSeats?.length,
+            userId
+        });
 
         // Verify signature when secret is configured
         if (process.env.RAZORPAY_SECRET) {
@@ -88,8 +98,14 @@ export const verifyRazorpayPayment = async (req, res) => {
                 .digest('hex')
 
             if (generatedSignature !== razorpaySignature) {
+                console.warn('verifyRazorpayPayment - signature mismatch', {
+                    generatedSignature,
+                    razorpaySignature
+                })
                 return res.json({ success: false, message: 'Payment signature verification failed' })
             }
+        } else {
+            return res.json({ success: false, message: 'Razorpay secret is not configured on the server' })
         }
 
         // Find the show (try string id then ObjectId fallback for mixed DB states)

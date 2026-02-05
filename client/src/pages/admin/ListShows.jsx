@@ -15,6 +15,8 @@ const ListShows = () => {
 
     const [shows, setShows] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
 
     const getAllShows = async () =>{
         try {
@@ -57,6 +59,16 @@ const ListShows = () => {
         getAllShows();
     }, []);
 
+    const totalPages = Math.max(1, Math.ceil(shows.length / pageSize));
+    const pageStart = (currentPage - 1) * pageSize;
+    const pageShows = shows.slice(pageStart, pageStart + pageSize);
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
   return !loading ? (
     <>
     <Title text1="List" text2="Shows" />
@@ -69,6 +81,12 @@ const ListShows = () => {
         </button>
     </div>
     <div className='max-w-4xl mt-6 overflow-x-auto'>
+        {shows.length > 0 && (
+            <div className='flex items-center justify-between text-sm text-gray-400 mb-4'>
+                <span>Showing {pageStart + 1}-{Math.min(pageStart + pageSize, shows.length)} of {shows.length}</span>
+                <span>Page {currentPage} of {totalPages}</span>
+            </div>
+        )}
         <table className='w-full border-collapse rounded-md overflow-hidden text-nowrap'>
             <thead>
                 <tr className='bg-primary/20 text-left text-white'>
@@ -80,7 +98,7 @@ const ListShows = () => {
                 </tr>
             </thead>
             <tbody className='text-sm font-light'>
-                {shows.map((show, index) => (
+                {pageShows.map((show, index) => (
                     <tr key={index} className='border-b border-primary/10 bg-primary/5 even:bg-primary/10'>
                         <td className='p-2 min-w-45 pl-5'>{show.movie.title}</td>
                         <td className='p-2'>{dateFormat(show.showDateTime)}</td>
@@ -108,6 +126,38 @@ const ListShows = () => {
                 ))}
             </tbody>
         </table>
+        {shows.length > 0 && (
+            <div className='flex items-center justify-center gap-2 mt-6'>
+                <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                    First
+                </button>
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                    Prev
+                </button>
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                    Next
+                </button>
+                <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                    Last
+                </button>
+            </div>
+        )}
 
     </div>
     </>

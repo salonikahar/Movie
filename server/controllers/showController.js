@@ -5,7 +5,7 @@ import Show from '../models/Show.js';
 
 export const getNowPlayingMovies = async (req, res) => {
     try {
-        const movies = await Movie.find({});
+        const movies = await Movie.find({ isActive: true });
         res.json({ success: true, movies });
     } catch (error) {
         res.json({ success: false, message: error.message });

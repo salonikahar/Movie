@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { dummyShowsData } from '../../assets/assets';
 import Loading from '../../components/Loading';
 import Title from '../../components/admin/Title.jsx';
-import { CheckIcon, DeleteIcon, StarIcon } from 'lucide-react';
+import { CheckIcon, DeleteIcon, SearchIcon, StarIcon } from 'lucide-react';
 import { kConverter } from '../../lib/kConverter';
 import toast from 'react-hot-toast';
 
@@ -15,6 +15,9 @@ const AddShows = () => {
     const [showPrice, setShowPrice] = useState("");
     const [theaters, setTheaters] = useState([]);
     const [selectedTheater, setSelectedTheater] = useState('theater1');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 12;
 
     const fetchNowPlayingMovies = async () => {
         try {
@@ -151,93 +154,203 @@ const AddShows = () => {
         })()
     }, []);
 
+    const filteredMovies = nowPlayingMovies.filter(movie => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return true;
+        const titleMatch = movie.title?.toLowerCase().includes(query);
+        const genreMatch = (movie.genres || []).some(g => {
+            const name = typeof g === 'string' ? g : g?.name;
+            return name?.toLowerCase().includes(query);
+        });
+        return titleMatch || genreMatch;
+    });
+
+    const totalPages = Math.max(1, Math.ceil(filteredMovies.length / pageSize));
+    const pageStart = (currentPage - 1) * pageSize;
+    const pageMovies = filteredMovies.slice(pageStart, pageStart + pageSize);
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
+    const selectedMovieData = nowPlayingMovies.find(movie => movie._id === selectedMovie);
+
     return nowPlayingMovies.length > 0 ? (
         <>
             <Title text1="Add" text2="Shows" />
-            <p className='mt-10 text-lg font-medium'>Now Playing Movies</p>
-            <div className='overflow-x-auto pb-4'>
-                <div className='group flex flex-wrap gap-4 mt-4 w-max'>
-                    {nowPlayingMovies.map((movie) => (
-                        <div key={movie._id} className={`relative max-w-40 cursor-pointer group-hover:opacity-40 hover:-translate-y-1 transition-all duration-300`} onClick={() => setSelectedMovie(movie._id)}>
-                            <div className='relative rounded-lg overflow-hidden'>
-                                <img src={movie.poster_path} alt="" className='w-full object-cover brightness-90' />
-                                <div className='text-sm flex items-center justify-between p-2 bg-black/70 w-full absolute bottom-0 left-0'>
-                                    <p className='flex items-center gap-1 text-gray-400'>
-                                        <StarIcon className='w-4 h-4 text-primary fill-primary' />
-                                        {movie.vote_average.toFixed(1)}
-                                    </p>
-                                    <p className='text-gray-300'>{kConverter(movie.vote_count)} Votes</p>
+            <div className='mt-8 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8'>
+                <div className='bg-primary/10 border border-primary/20 rounded-xl p-6'>
+                    <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+                        <p className='text-lg font-medium'>Select Movie</p>
+                        <div className='flex items-center gap-2 bg-gray-900/60 border border-gray-700 rounded-full px-4 py-2 w-full md:w-80'>
+                            <SearchIcon className='w-4 h-4 text-gray-400' />
+                            <input
+                                type='text'
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder='Search by movie or genre'
+                                className='bg-transparent outline-none text-sm w-full text-gray-200 placeholder:text-gray-500'
+                            />
+                        </div>
+                    </div>
+                    <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6'>
+                        {filteredMovies.length > 0 ? (
+                            pageMovies.map((movie) => (
+                                <button
+                                    type='button'
+                                    key={movie._id}
+                                    onClick={() => setSelectedMovie(movie._id)}
+                                    className={`relative text-left rounded-lg overflow-hidden border transition hover:-translate-y-1 ${
+                                        selectedMovie === movie._id
+                                            ? 'border-primary ring-2 ring-primary/30'
+                                            : 'border-transparent'
+                                    }`}
+                                >
+                                    <div className='relative'>
+                                        <img src={movie.poster_path} alt={movie.title} className='w-full h-52 object-cover brightness-90' />
+                                        <div className='text-xs flex items-center justify-between p-2 bg-black/70 w-full absolute bottom-0 left-0'>
+                                            <p className='flex items-center gap-1 text-gray-300'>
+                                                <StarIcon className='w-3.5 h-3.5 text-primary fill-primary' />
+                                                {movie.vote_average.toFixed(1)}
+                                            </p>
+                                            <p className='text-gray-300'>{kConverter(movie.vote_count)} Votes</p>
+                                        </div>
+                                    </div>
+                                    {selectedMovie === movie._id && (
+                                        <div className='absolute top-2 right-2 flex items-center justify-center bg-primary h-6 w-6 rounded'>
+                                            <CheckIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
+                                        </div>
+                                    )}
+                                    <div className='p-2'>
+                                        <p className='font-medium text-sm truncate'>{movie.title}</p>
+                                        <p className='text-gray-400 text-xs'>{movie.release_date}</p>
+                                    </div>
+                                </button>
+                            ))
+                        ) : (
+                            <div className='col-span-full text-center text-gray-400 py-8'>
+                                No movies match your search.
+                            </div>
+                        )}
+                    </div>
+                    {filteredMovies.length > 0 && (
+                        <div className='flex items-center justify-between mt-6 text-sm text-gray-400'>
+                            <span>Showing {pageStart + 1}-{Math.min(pageStart + pageSize, filteredMovies.length)} of {filteredMovies.length}</span>
+                            <span>Page {currentPage} of {totalPages}</span>
+                        </div>
+                    )}
+                    {filteredMovies.length > 0 && (
+                        <div className='flex items-center justify-center gap-2 mt-4'>
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                First
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Prev
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Next
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                Last
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className='bg-primary/10 border border-primary/20 rounded-xl p-6 space-y-6'>
+                    <div>
+                        <p className='text-lg font-medium'>Show Details</p>
+                        {selectedMovieData ? (
+                            <div className='mt-4 flex gap-4'>
+                                <img
+                                    src={selectedMovieData.poster_path}
+                                    alt={selectedMovieData.title}
+                                    className='w-20 h-28 rounded-md object-cover'
+                                />
+                                <div>
+                                    <p className='font-semibold'>{selectedMovieData.title}</p>
+                                    <p className='text-sm text-gray-400'>{selectedMovieData.release_date}</p>
+                                    <p className='text-xs text-gray-500 mt-2 line-clamp-3'>{selectedMovieData.overview}</p>
                                 </div>
                             </div>
-                            {selectedMovie === movie._id && (
-                                <div className='absolute top-2 right-2 flex items-center justify-center bg-primary h-6 w-6 rounded'>
-                                    <CheckIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
-                                </div>
-                            )}
-                            <p className='font-medium truncate'>{movie.title}</p>
-                            <p className='text-gray-400 text-sm'>{movie.release_date}</p>
+                        ) : (
+                            <p className='text-sm text-gray-400 mt-2'>Pick a movie from the list to continue.</p>
+                        )}
+                    </div>
 
+                    <div>
+                        <label className='block text-sm font-medium mb-2'>Select Theater</label>
+                        <select value={selectedTheater} onChange={e => setSelectedTheater(e.target.value)} className='border border-gray-600 bg-gray-900/60 p-2 rounded w-full'>
+                            {theaters.map(th => (
+                                <option key={th._id} value={th._id}>{th.name} ({th._id})</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className='block text-sm font-medium mb-2'>Show Price</label>
+                        <div className='inline-flex items-center gap-2 border border-gray-600 bg-gray-900/60 px-3 py-2 rounded-md w-full'>
+                            <p className='text-gray-400 text-sm'>{currency}</p>
+                            <input min={0} type="number" value={showPrice} onChange={(e) => setShowPrice(e.target.value)} 
+                            placeholder="Enter show price" className='outline-none bg-transparent w-full' />
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
 
-            {/* show price input */}
-            <div className='mt-8'>
-                <label className='block text-sm font-medium mb-2'>Show Price</label>
-                <div className='inline-flex items-center gap-2 border border-gray-600 px-3 py-2 rounded-md'>
-                    <p className='text-gray-400 text-sm'>{currency}</p>
-                    <input min={0} type="number" value={showPrice} onChange={(e) => setShowPrice(e.target.value)} 
-                    placeholder="Enter show price" className='outline-none' />
-                </div>
-            </div>
+                    <div>
+                        <label className='block text-sm font-medium mb-2'>Select Date & Time</label>
+                        <div className='flex flex-col sm:flex-row gap-3 border border-gray-600 bg-gray-900/60 p-2 rounded-lg'>
+                            <input type="datetime-local" value={dateTimeInput} onChange={(e) => setDateTimeInput(e.target.value)} 
+                            className='outline-none rounded-md bg-transparent flex-1'/>
+                            <button onClick={handleDateTimeAdd} className='bg-primary/80 text-white px-3 py-2 text-sm 
+                            rounded-lg hover:bg-primary cursor-pointer'> 
+                                Add Time 
+                            </button>
+                        </div>    
+                    </div>
 
-            {/* date and time selection */}
-            <div className='mt-6'>
-                    <label className='block text-sm font-medium mb-2'>Select Date & Time</label>
-                    <div className='inline-flex gap-5 border border-gray-600 p-1 pl-3 rounded-lg'>
-                        <input type="datetime-local" value={dateTimeInput} onChange={(e) => setDateTimeInput(e.target.value)} 
-                        className='outline-none rounded-md'/>
-                        <button onClick={handleDateTimeAdd} className='bg-primary/80 text-white px-3 py-2 text-sm 
-                        rounded-lg hover:bg-primary cursor-pointer'> 
-                            Add Time 
-                        </button>
-                    </div>    
-            </div>   
-
-            {/* Display selected times */}
-            {Object.keys(dateTimeSelection).length > 0 && (
-                <div className='mt-6'>
-                    <h2 className='mb-2'> Selected Date-Time</h2>
-                    <ul className='space-y-3'>
-                        {Object.entries(dateTimeSelection).map(([date, times]) => (
-                            <li key={date}>
-                                <div className='font-medium'>{date}</div>
-                                <div className='flex flex-wrap gap-3 mt-1 text-sm'>
-                                    {times.map((time) => (
-                                        <div key={time} className='border border-primary px-2 py-1 flex items-center rounded'>
-                                            <span>{time}</span>
-                                            <DeleteIcon onClick={() => handleDateTimeRemove(date, time)} className='ml-2 text-red-500 hover:text-red-700 cursor-pointer'/>
+                    {Object.keys(dateTimeSelection).length > 0 && (
+                        <div>
+                            <h2 className='mb-2 text-sm font-medium'>Selected Date-Time</h2>
+                            <ul className='space-y-3 text-sm'>
+                                {Object.entries(dateTimeSelection).map(([date, times]) => (
+                                    <li key={date}>
+                                        <div className='font-medium'>{date}</div>
+                                        <div className='flex flex-wrap gap-3 mt-1'>
+                                            {times.map((time) => (
+                                                <div key={time} className='border border-primary/40 px-2 py-1 flex items-center rounded'>
+                                                    <span>{time}</span>
+                                                    <DeleteIcon onClick={() => handleDateTimeRemove(date, time)} className='ml-2 text-red-500 hover:text-red-700 cursor-pointer'/>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-            <button onClick={handleAddShow} className='bg-primary text-white px-8 py-2 mt-6 rounded hover:bg-primary/90 transition-all cursor-pointer'>
-            Add Show
-            </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
-            {/* Theater selection (admin) */}
-            <div className='mt-6'>
-                <label className='block text-sm font-medium mb-2'>Select Theater</label>
-                <select value={selectedTheater} onChange={e => setSelectedTheater(e.target.value)} className='border p-2 rounded'>
-                    {theaters.map(th => (
-                        <option key={th._id} value={th._id}>{th.name} ({th._id})</option>
-                    ))}
-                </select>
+                    <button onClick={handleAddShow} className='bg-primary text-white px-8 py-2 rounded hover:bg-primary/90 transition-all cursor-pointer w-full'>
+                        Add Show
+                    </button>
+                </div>
             </div>
 
         </>

@@ -208,6 +208,12 @@ export const getDashboardStats = async (req, res) => {
             { $group: { _id: null, total: { $sum: '$amount' } } }
         ]);
         const totalUsers = await User.countDocuments({});
+        const totalMovies = await Movie.countDocuments({});
+        const activeMovies = await Movie.countDocuments({ isActive: true });
+        const inactiveMovies = await Movie.countDocuments({ isActive: false });
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingMovies = await Movie.countDocuments({ release_date: { $gte: today } });
+        const releasedMovies = Math.max(0, totalMovies - upcomingMovies);
         const activeShows = await Show.find({})
             .populate('movie')
             .sort({ showDateTime: 1 })
@@ -219,6 +225,11 @@ export const getDashboardStats = async (req, res) => {
                 totalBookings,
                 totalRevenue: totalRevenue[0]?.total || 0,
                 totalUsers,
+                totalMovies,
+                activeMovies,
+                inactiveMovies,
+                upcomingMovies,
+                releasedMovies,
                 activeShows
             }
         });
@@ -226,4 +237,3 @@ export const getDashboardStats = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
-

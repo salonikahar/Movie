@@ -14,10 +14,10 @@ const AdminSidebar = () => {
     const adminNavlinks = [
         { name: 'Dashboard', path: '/admin', icon: LayoutDashboardIcon },
         { name: 'Movies', path: '/admin/list-movies', icon: FilmIcon },
-        { name: 'Add Shows', path: '/admin/add-shows', icon: PlusSquareIcon },
+        // { name: 'Add Shows', path: '/admin/add-shows', icon: PlusSquareIcon },
         { name: 'Shows', path: '/admin/list-shows', icon: ListIcon },
-        { name: 'List Bookings', path: '/admin/list-bookings', icon: ListCollapseIcon },
-        { name: 'List Users', path: '/admin/list-users', icon: UserIcon },
+        { name: 'Bookings', path: '/admin/list-bookings', icon: ListCollapseIcon },
+        { name: 'Users', path: '/admin/list-users', icon: UserIcon },
     ]
 
     return (

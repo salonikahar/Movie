@@ -7,24 +7,24 @@ const DateSelect = ({ dateTime, id, onDateSelect }) => {
   const [selected, setSelected] = useState(null)
   const [dates, setDates] = useState([])
 
-  // Take dates directly from backend
-useEffect(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Take dates directly from backend (next 5 days only)
+  useEffect(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-  const lastWeek = new Date()
-  lastWeek.setDate(today.getDate() - 7)
-  lastWeek.setHours(0, 0, 0, 0)
+    const endDate = new Date(today)
+    endDate.setDate(endDate.getDate() + 4)
+    endDate.setHours(23, 59, 59, 999)
 
-  const backendDates = Object.keys(dateTime)
-    .filter(date => {
-      const d = new Date(date)
-      return d >= lastWeek && d <= today
-    })
-    .sort((a, b) => new Date(a) - new Date(b))
+    const backendDates = Object.keys(dateTime)
+      .filter(date => {
+        const d = new Date(date)
+        return d >= today && d <= endDate
+      })
+      .sort((a, b) => new Date(a) - new Date(b))
 
-  setDates(backendDates)
-}, [dateTime])
+    setDates(backendDates)
+  }, [dateTime])
 
 
 

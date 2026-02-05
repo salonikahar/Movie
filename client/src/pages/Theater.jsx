@@ -44,11 +44,19 @@ const Theater = () => {
 
       setMovie(currentMovie)
 
-      // ===== FILTER SHOWS BY MOVIE =====
-      const movieShows = showData.shows.filter(show =>
-        show.movie?.toString() === id ||
-        show.movie?._id === id
-      )
+      // ===== FILTER SHOWS BY MOVIE + NEXT 5 DAYS =====
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const endDate = new Date(today)
+      endDate.setDate(endDate.getDate() + 4)
+      endDate.setHours(23, 59, 59, 999)
+
+      const movieShows = showData.shows.filter(show => {
+        const isMovieMatch = show.movie?.toString() === id || show.movie?._id === id
+        if (!isMovieMatch) return false
+        const showTime = new Date(show.showDateTime)
+        return showTime >= today && showTime <= endDate
+      })
 
       // ===== GROUP SHOWS BY THEATER =====
       const groupedByTheater = movieShows.reduce((acc, show) => {

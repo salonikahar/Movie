@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Title from '../../components/admin/Title'
 import toast from 'react-hot-toast'
@@ -7,6 +7,10 @@ import Loading from '../../components/Loading'
 const AddMovie = () => {
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
+    const [existingMovies, setExistingMovies] = useState([])
+    const [moviesLoading, setMoviesLoading] = useState(true)
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 9
     const [formData, setFormData] = useState({
         _id: '',
         title: '',
@@ -85,6 +89,37 @@ const AddMovie = () => {
             setLoading(false)
         }
     }
+
+    const fetchExistingMovies = async () => {
+        try {
+            const response = await fetch('/api/admin/movies')
+            const result = await response.json()
+            if (result.success) {
+                setExistingMovies(result.movies || [])
+            } else {
+                setExistingMovies([])
+            }
+        } catch (error) {
+            console.error(error)
+            setExistingMovies([])
+        } finally {
+            setMoviesLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchExistingMovies()
+    }, [])
+
+    const totalPages = Math.max(1, Math.ceil(existingMovies.length / pageSize))
+    const pageStart = (currentPage - 1) * pageSize
+    const pageMovies = existingMovies.slice(pageStart, pageStart + pageSize)
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages)
+        }
+    }, [totalPages, currentPage])
 
     if (loading) return <Loading />
 
@@ -247,6 +282,70 @@ const AddMovie = () => {
                     </button>
                 </div>
             </form>
+
+            <div className="mt-12 max-w-6xl">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-medium">All Movies</h2>
+                    <div className="text-sm text-gray-400">
+                        {existingMovies.length > 0
+                            ? `Showing ${pageStart + 1}-${Math.min(pageStart + pageSize, existingMovies.length)} of ${existingMovies.length}`
+                            : 'No movies found'}
+                    </div>
+                </div>
+                {moviesLoading ? (
+                    <Loading />
+                ) : existingMovies.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {pageMovies.map(movie => (
+                                <div key={movie._id} className="bg-primary/10 border border-primary/20 rounded-lg overflow-hidden">
+                                    <img
+                                        src={movie.poster_path}
+                                        alt={movie.title}
+                                        className="w-full h-72 object-cover"
+                                    />
+                                    <div className="p-3">
+                                        <p className="font-semibold truncate">{movie.title}</p>
+                                        <p className="text-sm text-gray-400">{movie.release_date}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 mt-6">
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className="px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                First
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Prev
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Last
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-center py-8 text-gray-400">No movies available.</div>
+                )}
+            </div>
         </>
     )
 }

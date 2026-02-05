@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
+import { dummyDateTimeData, dummyShowsData, assets } from '../assets/assets'
 import BlurCircle from '../components/BlurCircle'
 import { Heart, PlayCircleIcon, StarIcon } from 'lucide-react'
 import timeFormat from '../lib/timeFormat'
 import DateSelect from '../components/DateSelect'
 import MovieCard from '../components/MovieCard'
 import Loading from '../components/Loading'
+import { isFavorite, toggleFavorite } from '../lib/favorites'
+import toast from 'react-hot-toast'
 
 const MovieDetails = () => {
   const navigate = useNavigate()
   const {id} = useParams()
   const [show, setShow] = useState(null)
+  const [favorite, setFavorite] = useState(false)
 
   const getShow = async ()=>{
     try {
@@ -43,11 +46,13 @@ const MovieDetails = () => {
               movie: movie,
               dateTime: dateTimeObj
             });
+            setFavorite(isFavorite(movie._id))
           } else {
             setShow({
               movie: movie,
               dateTime: {} // No shows available
             });
+            setFavorite(isFavorite(movie._id))
           }
         }
       }
@@ -63,7 +68,7 @@ useEffect(()=>{
   return show ? (
     <div className='px-6 md:px-16 lg:px-40 pt-30 md:pt-50'>
       <div className='flex flex-col md:flex-row gap-8 max-w-6xl mx-auto'>
-        <img src={show.movie.poster_path} alt="" className='max-md:mx-auto rounded-xl 
+        <img src={show.movie.poster_path} onError={(e) => e.target.src = 'https://via.placeholder.com/300x450?text=No+Image'} alt="" className='max-md:mx-auto rounded-xl
         h-104 max-w-70 object-cover' />
 
         <div className='relative flex flex-col gap-3'>
@@ -87,8 +92,16 @@ useEffect(()=>{
               Watch Trailer
               </button>
             <button onClick={() => navigate(`/movies/${id}/theater`)} className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95'>Buy Tickets</button>
-            <button className='bg-gray-700 p-2.5 rounded-full transition cursor-pointe active:scale-95'>
-              <Heart className={`w-5 h-5`}/> 
+            <button
+              onClick={() => {
+                const updated = toggleFavorite(id)
+                const nowFavorite = updated.includes(id)
+                setFavorite(nowFavorite)
+                toast.success(nowFavorite ? 'Added to favorites' : 'Removed from favorites')
+              }}
+              className='bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95'
+            >
+              <Heart className={`w-5 h-5 ${favorite ? 'text-primary fill-primary' : ''}`}/> 
             </button>
           </div>
         </div>
@@ -99,7 +112,7 @@ useEffect(()=>{
         <div className='flex items-center gap-4 w-max px-4'>
               {show.movie.casts.slice(0,12).map((cast,index)=>(
                 <div key={index} className='flex flex-col items-center text-center'>
-                  <img src={cast.profile_path} alt="" className='rounded-full h-20 md:h-20 aspect-square object-cover' />
+                  <img src={cast.profile_path || assets.profile} alt="" className='rounded-full h-20 md:h-20 aspect-square object-cover' />
                   <p className='font-medium text-xs mt-3'>{cast.name}</p>
                 </div>
               ))}
