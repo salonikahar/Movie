@@ -65,7 +65,7 @@ const Movies = () => {
 
   return filteredMovies.length > 0 ? (
 
-    <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44
+    <div className='relative pt-32 pb-24 px-6 md:px-16 lg:px-40 xl:px-44
      overflow-hidden min-h-[80vh]'>
 
       <BlurCircle top="150px" left="0px" />
@@ -73,25 +73,25 @@ const Movies = () => {
 
       {/* Header */}
       <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4'>
-        <h1 className='text-lg font-medium'>Movies</h1>
+        <h1 className='text-2xl font-semibold text-slate-900'>Movies in Cinemas</h1>
 
         <div className='flex items-center gap-3'>
           <button
             onClick={() => setFilter('now')}
-            className={`px-4 py-2 rounded-full text-sm transition
+            className={`px-4 py-2 rounded-full text-sm transition border
               ${filter === 'now'
-                ? 'bg-primary text-white'
-                : 'bg-gray-800 text-gray-300'}`}
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-slate-900'}`}
           >
             Now Showing
           </button>
 
           <button
             onClick={() => setFilter('upcoming')}
-            className={`px-4 py-2 rounded-full text-sm transition
+            className={`px-4 py-2 rounded-full text-sm transition border
               ${filter === 'upcoming'
-                ? 'bg-primary text-white'
-                : 'bg-gray-800 text-gray-300'}`}
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-slate-900'}`}
           >
             Upcoming
           </button>
@@ -111,7 +111,7 @@ const Movies = () => {
         <button
           onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
           disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-40"
+          className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-md disabled:opacity-40"
         >
           Prev
         </button>
@@ -120,10 +120,10 @@ const Movies = () => {
           <button
             key={index}
             onClick={() => setCurrentPage(index + 1)}
-            className={`px-4 py-2 rounded
+            className={`px-4 py-2 rounded-md border
               ${currentPage === index + 1
-                ? 'bg-primary text-white'
-                : 'bg-gray-800 text-gray-300'}`}
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-slate-900'}`}
           >
             {index + 1}
           </button>
@@ -132,7 +132,7 @@ const Movies = () => {
         <button
           onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-40"
+          className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-md disabled:opacity-40"
         >
           Next
         </button>
@@ -143,7 +143,7 @@ const Movies = () => {
 
   ) : (
     <div className='flex flex-col items-center justify-center h-screen'>
-      <h1 className='text-3xl font-bold text-center'>
+      <h1 className='text-3xl font-bold text-center text-slate-900'>
         No movies available
       </h1>
     </div>

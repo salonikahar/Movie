@@ -14,6 +14,8 @@ export const getNowPlayingMovies = async (req, res) => {
 
 export const getShows = async (req, res) => {
     try {
+        const now = new Date();
+        await Show.deleteMany({ showDateTime: { $lt: now } });
         // Return show documents as they are (movie stored as string id)
         // Client code expects movie to be an id string and filters locally.
         const shows = await Show.find({});

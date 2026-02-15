@@ -68,17 +68,17 @@ const ListUsers = () => {
                                 <div className='space-y-2'>
                                     <div className='flex items-center gap-2 text-sm'>
                                         <Mail className='w-4 h-4 text-primary' />
-                                        <span className='text-gray-300'>{user.email}</span>
+                                        <span className='text-gray-600'>{user.email}</span>
                                     </div>
                                     {user.phone && (
                                         <div className='flex items-center gap-2 text-sm'>
                                             <Phone className='w-4 h-4 text-primary' />
-                                            <span className='text-gray-300'>{user.phone}</span>
+                                            <span className='text-gray-600'>{user.phone}</span>
                                         </div>
                                     )}
                                     <div className='flex items-center gap-2 text-sm'>
                                         <Calendar className='w-4 h-4 text-primary' />
-                                        <span className='text-gray-300'>
+                                        <span className='text-gray-600'>
                                             Joined: {new Date(user.createdAt).toLocaleDateString()}
                                         </span>
                                     </div>

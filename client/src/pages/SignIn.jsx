@@ -42,15 +42,15 @@ const SignIn = () => {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
       <BlurCircle top="50px" left="50px" />
       <BlurCircle bottom="50px" right="50px" />
-      <div className="relative max-w-md w-full space-y-8 bg-primary/10 border border-primary/20 rounded-lg p-8">
+      <div className="relative max-w-md w-full space-y-8 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
+          <p className="mt-2 text-center text-sm text-slate-500">
             Or{' '}
             <button
               onClick={() => navigate('/sign-up')}
@@ -72,7 +72,7 @@ const SignIn = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-600 bg-gray-800/50 placeholder-gray-400 text-white rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-slate-200 bg-slate-50 placeholder-slate-400 text-slate-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -88,7 +88,7 @@ const SignIn = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-600 bg-gray-800/50 placeholder-gray-400 text-white rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-slate-200 bg-slate-50 placeholder-slate-400 text-slate-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

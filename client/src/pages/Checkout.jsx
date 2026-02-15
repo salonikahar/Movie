@@ -168,7 +168,7 @@ const Checkout = () => {
           contact: user?.phone || ''
         },
         theme: {
-          color: '#F84565'
+          color: '#DF1827'
         },
         modal: {
           ondismiss: function() {
@@ -197,7 +197,7 @@ const Checkout = () => {
   const totalAmount = selectedSeats.length * showPrice
 
   return (
-    <div className='relative min-h-screen py-10 px-6 md:px-16 lg:px-40'>
+    <div className='relative min-h-screen pt-32 pb-16 px-6 md:px-16 lg:px-40'>
       <BlurCircle top="50px" left="50px" />
       <BlurCircle bottom="50px" right="50px" />
       
@@ -206,76 +206,76 @@ const Checkout = () => {
         <div className='flex items-center gap-4 mb-8'>
           <button
             onClick={() => navigate(-1)}
-            className='p-2 hover:bg-primary/20 rounded-full transition'
+            className='p-2 hover:bg-slate-100 rounded-full transition'
           >
             <ArrowLeftIcon className='w-5 h-5' />
           </button>
-          <h1 className='text-3xl font-bold'>Checkout</h1>
+          <h1 className='text-3xl font-bold text-slate-900'>Checkout</h1>
         </div>
 
         <div className='grid md:grid-cols-2 gap-8'>
           {/* Booking Summary */}
-          <div className='bg-primary/10 border border-primary/20 rounded-lg p-6'>
-            <h2 className='text-xl font-semibold mb-4'>Booking Summary</h2>
+          <div className='bg-white border border-slate-200 rounded-2xl p-6 shadow-sm'>
+            <h2 className='text-xl font-semibold mb-4 text-slate-900'>Booking Summary</h2>
 
             <div className='space-y-3 mb-6'>
               <div>
-                <p className='text-sm text-gray-400'>Movie</p>
-                <p className='font-medium'>{movieTitle}</p>
+                <p className='text-sm text-slate-500'>Movie</p>
+                <p className='font-medium text-slate-900'>{movieTitle}</p>
               </div>
 
               <div>
-                <p className='text-sm text-gray-400'>Theater</p>
-                <p className='font-medium'>{theaterName || 'Theater 1'}</p>
+                <p className='text-sm text-slate-500'>Theater</p>
+                <p className='font-medium text-slate-900'>{theaterName || 'Theater 1'}</p>
               </div>
 
               <div>
-                <p className='text-sm text-gray-400'>Date & Time</p>
-                <p className='font-medium'>{date} at {showTime}</p>
+                <p className='text-sm text-slate-500'>Date & Time</p>
+                <p className='font-medium text-slate-900'>{date} at {showTime}</p>
               </div>
 
               <div>
-                <p className='text-sm text-gray-400'>Seats</p>
-                <p className='font-medium'>{selectedSeats.join(', ')}</p>
+                <p className='text-sm text-slate-500'>Seats</p>
+                <p className='font-medium text-slate-900'>{selectedSeats.join(', ')}</p>
               </div>
 
-              <div className='border-t border-primary/20 pt-3'>
+              <div className='border-t border-slate-200 pt-3'>
                 <div className='flex justify-between items-center'>
-                  <span className='text-sm text-gray-400'>
-                    {selectedSeats.length} × ₹{showPrice}
+                  <span className='text-sm text-slate-500'>
+                    {selectedSeats.length} x Rs. {showPrice}
                   </span>
-                  <span className='font-semibold text-lg'>₹{totalAmount}</span>
+                  <span className='font-semibold text-lg text-slate-900'>Rs. {totalAmount}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Payment Section */}
-          <div className='bg-primary/10 border border-primary/20 rounded-lg p-6'>
-            <h2 className='text-xl font-semibold mb-4 flex items-center gap-2'>
+          <div className='bg-white border border-slate-200 rounded-2xl p-6 shadow-sm'>
+            <h2 className='text-xl font-semibold mb-4 flex items-center gap-2 text-slate-900'>
               <CreditCardIcon className='w-5 h-5' />
               Payment Method
             </h2>
 
             <div className='mb-6'>
               {/* Razorpay - Only Payment Option */}
-              <div className='p-4 border-2 border-primary bg-primary/20 rounded-lg'>
+              <div className='p-4 border-2 border-primary/60 bg-primary/10 rounded-lg'>
                 <div className='flex items-center gap-3'>
                   <div className='p-2 rounded-full bg-primary'>
                     <Wallet className='w-5 h-5 text-white' />
                   </div>
                   <div className='flex-1'>
-                    <p className='font-semibold'>Online Payment (Razorpay)</p>
-                    <p className='text-sm text-gray-400'>Pay securely online</p>
+                    <p className='font-semibold text-slate-900'>Online Payment (Razorpay)</p>
+                    <p className='text-sm text-slate-500'>Pay securely online</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className='border-t border-primary/20 pt-4 mb-4'>
+            <div className='border-t border-slate-200 pt-4 mb-4'>
               <div className='flex justify-between items-center text-lg font-semibold'>
                 <span>Total Amount</span>
-                <span className='text-primary'>₹{totalAmount}</span>
+                <span className='text-primary'>Rs. {totalAmount}</span>
               </div>
             </div>
 
@@ -294,4 +294,3 @@ const Checkout = () => {
 }
 
 export default Checkout
-

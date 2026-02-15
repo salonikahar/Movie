@@ -12,6 +12,18 @@ const Theaters = () => {
   const [movies, setMovies] = useState([])
   const [shows, setShows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedCity, setSelectedCity] = useState('Mumbai')
+
+  useEffect(() => {
+    const storedCity = localStorage.getItem('selectedCity')
+    if (storedCity) setSelectedCity(storedCity)
+    const handleStorage = () => {
+      const nextCity = localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +70,14 @@ const Theaters = () => {
     return movies.filter(movie => movieIds.includes(movie._id))
   }
 
+  const cityTheaters = theaters.filter(theater => theater.city === selectedCity)
+
+  useEffect(() => {
+    if (selectedTheater && selectedTheater.city !== selectedCity) {
+      setSelectedTheater(null)
+    }
+  }, [selectedCity, selectedTheater])
+
   if (loading) {
     return <Loading />
   }
@@ -65,43 +85,47 @@ const Theaters = () => {
   if (theaters.length === 0) {
     return (
       <div className='flex flex-col items-center justify-center h-screen'>
-        <h1 className='text-3xl font-bold text-center'>No theaters available</h1>
+        <h1 className='text-3xl font-bold text-center text-slate-900'>No theaters available</h1>
       </div>
     )
   }
 
   return (
-    <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
+    <div className='relative pt-32 pb-24 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
       <BlurCircle top="150px" left="0px" />
       <BlurCircle bottom="50px" right="50px" />
 
-      <h1 className='text-lg font-medium my-4'>Our Theaters</h1>
+      <h1 className='text-2xl font-semibold my-4 text-slate-900'>Theaters in {selectedCity}</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-        {theaters.map((theater) => (
-          <div
-            key={theater._id}
-            onClick={() => handleTheaterClick(theater)}
-            className={`bg-primary/10 border border-primary/20 rounded-lg p-6 transition cursor-pointer ${
-              selectedTheater?._id === theater._id ? 'ring-2 ring-primary' : 'hover:bg-primary/20'
-            }`}
-          >
-            <h3 className='text-xl font-semibold mb-2'>{theater.name}</h3>
-            <p className='text-gray-400 text-sm mb-2'>{theater.location}</p>
-            <p className='text-gray-400 text-sm mb-4'>{theater.screens} screens</p>
-            <div className='flex flex-wrap gap-2'>
-              {theater.facilities.map((facility, index) => (
-                <span key={index} className='text-xs bg-primary/20 px-3 py-1 rounded-full'>
-                  {facility}
-                </span>
-              ))}
+        {cityTheaters.length > 0 ? cityTheaters.map((theater) => (
+            <div
+              key={theater._id}
+              onClick={() => handleTheaterClick(theater)}
+              className={`bg-white border border-slate-200 rounded-2xl p-6 transition cursor-pointer shadow-sm ${
+                selectedTheater?._id === theater._id ? 'ring-2 ring-primary' : 'hover:border-primary/40'
+              }`}
+            >
+              <h3 className='text-xl font-semibold mb-2'>{theater.name}</h3>
+              <p className='text-slate-500 text-sm mb-2'>{theater.location}</p>
+              <p className='text-slate-500 text-sm mb-4'>{theater.screens} screens</p>
+              <div className='flex flex-wrap gap-2'>
+                {theater.facilities.map((facility, index) => (
+                  <span key={index} className='text-xs bg-primary/10 text-primary px-3 py-1 rounded-full'>
+                    {facility}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          )) : (
+            <div className='col-span-full text-center text-slate-500 py-12'>
+              No theaters available in {selectedCity}.
+            </div>
+          )}
       </div>
 
       {selectedTheater && (
         <div className='mt-20'>
-          <h2 className='text-lg font-medium mb-8'>Movies at {selectedTheater.name}</h2>
+          <h2 className='text-lg font-semibold mb-8 text-slate-900'>Movies at {selectedTheater.name}</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
             {getMoviesForTheater(selectedTheater._id).map((movie) => (
               <div
@@ -116,7 +140,7 @@ const Theaters = () => {
           <div className='flex justify-center mt-10'>
             <button
               onClick={() => navigate('/movies')}
-              className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer'
+              className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md text-white font-semibold cursor-pointer'
             >
               View All Movies
             </button>

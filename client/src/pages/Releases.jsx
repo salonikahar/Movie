@@ -42,25 +42,25 @@ const Releases = () => {
   if (loading) return <Loading />
 
   return (
-    <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
+    <div className='relative pt-32 pb-24 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
       <BlurCircle top="150px" left="0px" />
       <BlurCircle bottom="50px" right="50px" />
 
       <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-        <h1 className='text-lg font-medium'>Releases</h1>
+        <h1 className='text-2xl font-semibold text-slate-900'>Releases</h1>
         <div className='flex items-center gap-3'>
           <button
             onClick={() => setFilter('upcoming')}
-            className={`px-4 py-2 rounded-full text-sm transition ${
-              filter === 'upcoming' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-300'
+            className={`px-4 py-2 rounded-full text-sm transition border ${
+              filter === 'upcoming' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-slate-900'
             }`}
           >
             Upcoming
           </button>
           <button
             onClick={() => setFilter('released')}
-            className={`px-4 py-2 rounded-full text-sm transition ${
-              filter === 'released' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-300'
+            className={`px-4 py-2 rounded-full text-sm transition border ${
+              filter === 'released' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-slate-900'
             }`}
           >
             Released
@@ -75,7 +75,7 @@ const Releases = () => {
           ))}
         </div>
       ) : (
-        <div className='mt-16 text-center text-gray-400'>No movies found for this filter.</div>
+        <div className='mt-16 text-center text-slate-500'>No movies found for this filter.</div>
       )}
     </div>
   )

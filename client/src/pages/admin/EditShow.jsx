@@ -12,12 +12,46 @@ const EditShow = () => {
     const [saving, setSaving] = useState(false)
     const [movies, setMovies] = useState([])
     const [theaters, setTheaters] = useState([])
+    const [selectedCity, setSelectedCity] = useState('All Cities')
     const [formData, setFormData] = useState({
         movie: '',
         showDateTime: '',
         showPrice: '',
         theater: ''
     })
+
+    const indianCities = [
+        'Mumbai',
+        'Delhi-NCR',
+        'Bengaluru',
+        'Hyderabad',
+        'Chennai',
+        'Pune',
+        'Kolkata',
+        'Ahmedabad',
+        'Jaipur',
+        'Chandigarh',
+        'Lucknow',
+        'Kochi',
+        'Indore',
+        'Surat',
+        'Nagpur',
+        'Bhopal',
+        'Patna',
+        'Bhubaneswar',
+        'Guwahati',
+        'Dehradun',
+        'Vadodara',
+        'Coimbatore',
+        'Visakhapatnam',
+        'Raipur',
+        'Ranchi',
+        'Agra',
+        'Amritsar',
+        'Jodhpur',
+        'Madurai',
+        'Thiruvananthapuram'
+    ]
 
     useEffect(() => {
         const fetchData = async () => {
@@ -55,6 +89,9 @@ const EditShow = () => {
                 const theaterResult = await theaterResponse.json()
                 if (theaterResult.success) {
                     setTheaters(theaterResult.theaters)
+                    if (theaterResult.theaters.length > 0 && theaterResult.theaters[0].city) {
+                        setSelectedCity(theaterResult.theaters[0].city)
+                    }
                 }
             } catch (error) {
                 console.error(error)
@@ -75,6 +112,25 @@ const EditShow = () => {
             [name]: name === 'showPrice' ? parseFloat(value) || 0 : value
         }))
     }
+
+    const filteredTheaters = selectedCity === 'All Cities'
+        ? theaters
+        : theaters.filter(theater => theater.city === selectedCity)
+
+    useEffect(() => {
+        if (formData.theater && theaters.length > 0) {
+            const match = theaters.find(t => t._id === formData.theater)
+            if (match && match.city) {
+                setSelectedCity(match.city)
+            }
+        }
+    }, [formData.theater, theaters])
+
+    useEffect(() => {
+        if (filteredTheaters.length > 0 && !filteredTheaters.some(t => t._id === formData.theater)) {
+            setFormData(prev => ({ ...prev, theater: filteredTheaters[0]._id }))
+        }
+    }, [filteredTheaters, formData.theater])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -120,7 +176,7 @@ const EditShow = () => {
                             value={formData.movie}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         >
                             <option value="">Select a movie</option>
                             {movies.map(movie => (
@@ -136,13 +192,13 @@ const EditShow = () => {
                             value={formData.showDateTime}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-2">Show Price *</label>
-                        <div className='inline-flex items-center gap-2 border border-gray-600 px-3 py-2 rounded-md w-full'>
-                            <p className='text-gray-400 text-sm'>{currency}</p>
+                        <div className='inline-flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-md w-full'>
+                            <p className='text-slate-500 text-sm'>{currency}</p>
                             <input
                                 type="number"
                                 name="showPrice"
@@ -156,16 +212,29 @@ const EditShow = () => {
                         </div>
                     </div>
                     <div>
+                        <label className="block text-sm font-medium mb-2">City</label>
+                        <select
+                            value={selectedCity}
+                            onChange={(e) => setSelectedCity(e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
+                        >
+                            <option value="All Cities">All Cities</option>
+                            {indianCities.map(city => (
+                                <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
                         <label className="block text-sm font-medium mb-2">Theater *</label>
                         <select
                             name="theater"
                             value={formData.theater}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         >
                             <option value="">Select a theater</option>
-                            {theaters.map(theater => (
+                            {filteredTheaters.map(theater => (
                                 <option key={theater._id} value={theater._id}>{theater.name}</option>
                             ))}
                         </select>
@@ -183,7 +252,7 @@ const EditShow = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/admin/list-shows')}
-                        className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition font-medium"
+                        className="px-6 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md transition font-medium"
                     >
                         Cancel
                     </button>
@@ -194,3 +263,4 @@ const EditShow = () => {
 }
 
 export default EditShow
+

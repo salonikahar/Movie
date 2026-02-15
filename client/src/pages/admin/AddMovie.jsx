@@ -20,6 +20,7 @@ const AddMovie = () => {
         release_date: '',
         original_language: 'en',
         tagline: '',
+        trailerUrl: '',
         genres: [],
         casts: [],
         crew: [],
@@ -135,7 +136,7 @@ const AddMovie = () => {
                             name="_id"
                             value={formData._id}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                             placeholder="Auto-generated if empty"
                         />
                     </div>
@@ -147,7 +148,7 @@ const AddMovie = () => {
                             value={formData.title}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -158,7 +159,7 @@ const AddMovie = () => {
                             value={formData.poster_path}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -169,7 +170,7 @@ const AddMovie = () => {
                             value={formData.backdrop_path}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -180,7 +181,7 @@ const AddMovie = () => {
                             value={formData.release_date}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -192,7 +193,7 @@ const AddMovie = () => {
                             onChange={handleChange}
                             required
                             min="0"
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -205,7 +206,7 @@ const AddMovie = () => {
                             min="0"
                             max="10"
                             step="0.1"
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                     <div>
@@ -216,7 +217,18 @@ const AddMovie = () => {
                             value={formData.vote_count}
                             onChange={handleChange}
                             min="0"
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Trailer URL (YouTube)</label>
+                        <input
+                            type="url"
+                            name="trailerUrl"
+                            value={formData.trailerUrl}
+                            onChange={handleChange}
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                         />
                     </div>
                 </div>
@@ -229,7 +241,7 @@ const AddMovie = () => {
                         onChange={handleChange}
                         required
                         rows="4"
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                        className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                     />
                 </div>
 
@@ -240,7 +252,7 @@ const AddMovie = () => {
                         value={formData.genres.map(g => g.name).join(', ')}
                         onChange={handleGenresChange}
                         placeholder="Action, Drama, Comedy"
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                        className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                     />
                 </div>
 
@@ -251,7 +263,7 @@ const AddMovie = () => {
                         onChange={handleCastsChange}
                         placeholder="John Doe|https://image.url, Jane Smith"
                         rows="3"
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                        className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                     />
                 </div>
 
@@ -262,7 +274,7 @@ const AddMovie = () => {
                         name="tagline"
                         value={formData.tagline}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-800/50 rounded-md text-white focus:outline-none focus:ring-primary focus:border-primary"
+                        className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900 focus:outline-none focus:ring-primary focus:border-primary"
                     />
                 </div>
 
@@ -351,3 +363,4 @@ const AddMovie = () => {
 }
 
 export default AddMovie
+

@@ -121,6 +121,8 @@ export const getMovieById = async (req, res) => {
 // Get all shows for admin
 export const getAllShows = async (req, res) => {
     try {
+        const now = new Date();
+        await Show.deleteMany({ showDateTime: { $lt: now } });
         const shows = await Show.find({})
             .populate({
                 path: 'movie',

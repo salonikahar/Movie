@@ -10,6 +10,8 @@ const ListMovies = () => {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [movieToDelete, setMovieToDelete] = useState(null);
     const pageSize = 9;
 
     const getAllMovies = async () => {
@@ -30,19 +32,24 @@ const ListMovies = () => {
         }
     }
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this movie?')) {
-            return;
-        }
+    const requestDelete = (movie) => {
+        setMovieToDelete(movie);
+        setShowDeleteModal(true);
+    };
+
+    const handleDelete = async () => {
+        if (!movieToDelete?._id) return;
 
         try {
-            const response = await fetch(`/api/admin/movies/${id}`, {
+            const response = await fetch(`/api/admin/movies/${movieToDelete._id}`, {
                 method: 'DELETE'
             });
             const result = await response.json();
             if (result.success) {
                 toast.success('Movie deleted successfully');
                 getAllMovies();
+                setShowDeleteModal(false);
+                setMovieToDelete(null);
             } else {
                 toast.error(result.message || 'Failed to delete movie');
             }
@@ -53,20 +60,19 @@ const ListMovies = () => {
     }
 
     const handleToggleActive = async (movie) => {
+        const nextStatus = !Boolean(movie.isActive)
         try {
             const response = await fetch(`/api/admin/movies/${movie._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ isActive: !movie.isActive })
+                body: JSON.stringify({ isActive: nextStatus })
             });
             const result = await response.json();
-            if (result.success) {
-                setMovies(prev =>
-                    prev.map(m => (m._id === movie._id ? { ...m, isActive: !movie.isActive } : m))
-                );
-                toast.success(`Movie ${movie.isActive ? 'deactivated' : 'activated'} successfully`);
+            if (response.ok && result.success) {
+                toast.success(`Movie ${nextStatus ? 'activated' : 'deactivated'} successfully`);
+                await getAllMovies();
             } else {
                 toast.error(result.message || 'Failed to update movie');
             }
@@ -104,7 +110,7 @@ const ListMovies = () => {
             <div className='max-w-6xl mt-6 overflow-x-auto'>
                 {movies.length > 0 ? (
                     <>
-                        <div className='flex items-center justify-between text-sm text-gray-400 mb-4'>
+                        <div className='flex items-center justify-between text-sm text-slate-500 mb-4'>
                             <span>Showing {pageStart + 1}-{Math.min(pageStart + pageSize, movies.length)} of {movies.length}</span>
                             <span>Page {currentPage} of {totalPages}</span>
                         </div>
@@ -129,8 +135,8 @@ const ListMovies = () => {
                                 </div>
                                 <div className='p-4'>
                                     <h3 className='font-semibold text-lg truncate'>{movie.title}</h3>
-                                    <p className='text-sm text-gray-400 mt-1'>{new Date(movie.release_date).getFullYear()}</p>
-                                    <p className='text-sm text-gray-300 mt-2 line-clamp-2'>{movie.overview}</p>
+                                    <p className='text-sm text-slate-500 mt-1'>{new Date(movie.release_date).getFullYear()}</p>
+                                    <p className='text-sm text-slate-600 mt-2 line-clamp-2'>{movie.overview}</p>
                                     <div className='flex items-center gap-2 mt-4'>
                                         <button
                                             onClick={() => handleToggleActive(movie)}
@@ -150,7 +156,7 @@ const ListMovies = () => {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(movie._id)}
+                                            onClick={() => requestDelete(movie)}
                                             className='flex items-center gap-2 bg-red-500/20 text-red-500 px-4 py-2 rounded-md hover:bg-red-500/30 transition flex-1 justify-center'
                                         >
                                             <TrashIcon className='w-4 h-4' />
@@ -165,28 +171,28 @@ const ListMovies = () => {
                             <button
                                 onClick={() => setCurrentPage(1)}
                                 disabled={currentPage === 1}
-                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                className='px-3 py-2 rounded-md bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
                             >
                                 First
                             </button>
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
-                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                className='px-3 py-2 rounded-md bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
                             >
                                 Prev
                             </button>
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                                 disabled={currentPage === totalPages}
-                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                className='px-3 py-2 rounded-md bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
                             >
                                 Next
                             </button>
                             <button
                                 onClick={() => setCurrentPage(totalPages)}
                                 disabled={currentPage === totalPages}
-                                className='px-3 py-2 rounded-md bg-gray-800 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                className='px-3 py-2 rounded-md bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
                             >
                                 Last
                             </button>
@@ -194,7 +200,7 @@ const ListMovies = () => {
                     </>
                 ) : (
                     <div className='text-center py-12'>
-                        <p className='text-gray-400 text-lg'>No movies found</p>
+                        <p className='text-slate-500 text-lg'>No movies found</p>
                         <button 
                             onClick={() => navigate('/admin/add-movie')}
                             className='mt-4 bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition'
@@ -204,6 +210,34 @@ const ListMovies = () => {
                     </div>
                 )}
             </div>
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                        <h3 className="text-lg font-semibold text-slate-900">Delete Movie</h3>
+                        <p className="mt-2 text-sm text-slate-600">
+                            Are you sure you want to delete
+                            {movieToDelete?.title ? ` “${movieToDelete.title}”` : ' this movie'}?
+                        </p>
+                        <div className="mt-6 flex gap-3 justify-end">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setMovieToDelete(null);
+                                }}
+                                className="px-4 py-2 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     ) : <Loading />
 }

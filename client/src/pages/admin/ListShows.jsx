@@ -82,14 +82,14 @@ const ListShows = () => {
     </div>
     <div className='max-w-4xl mt-6 overflow-x-auto'>
         {shows.length > 0 && (
-            <div className='flex items-center justify-between text-sm text-gray-400 mb-4'>
+            <div className='flex items-center justify-between text-sm text-gray-800 mb-4'>
                 <span>Showing {pageStart + 1}-{Math.min(pageStart + pageSize, shows.length)} of {shows.length}</span>
                 <span>Page {currentPage} of {totalPages}</span>
             </div>
         )}
         <table className='w-full border-collapse rounded-md overflow-hidden text-nowrap'>
             <thead>
-                <tr className='bg-primary/20 text-left text-white'>
+                <tr className='bg-primary/20 text-left text-dark'>
                     <th className='p-2 font-medium pl-5'>Movie Name</th>
                     <th className='p-2 font-medium'>Show Time</th>
                     <th className='p-2 font-medium'>Total Bookings</th>
@@ -97,7 +97,7 @@ const ListShows = () => {
                     <th className='p-2 font-medium'>Actions</th>
                 </tr>
             </thead>
-            <tbody className='text-sm font-light'>
+            <tbody className='text-sm font-primary'>
                 {pageShows.map((show, index) => (
                     <tr key={index} className='border-b border-primary/10 bg-primary/5 even:bg-primary/10'>
                         <td className='p-2 min-w-45 pl-5'>{show.movie.title}</td>

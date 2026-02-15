@@ -96,10 +96,10 @@ const MyBookings = () => {
   if (!user) {
     return (
       <div className='flex flex-col items-center justify-center min-h-[80vh]'>
-        <h2 className='text-xl font-semibold text-gray-400 mb-2'>Please login to view your bookings</h2>
+        <h2 className='text-xl font-semibold text-slate-600 mb-2'>Please login to view your bookings</h2>
         <button 
           onClick={() => window.location.href = '/sign-in'}
-          className='px-6 py-2 bg-primary hover:bg-primary-dull rounded-md transition'
+          className='px-6 py-2 bg-primary hover:bg-primary-dull rounded-md transition text-white font-semibold'
         >
           Login
         </button>
@@ -109,49 +109,49 @@ const MyBookings = () => {
 
 
   return !isLoading ? (
-    <div className='relative px-6 md:px-16 lg:px-40 pt-30 md:pt-40 min-h-[80vh]'>
+    <div className='relative px-6 md:px-16 lg:px-40 pt-32 md:pt-36 min-h-[80vh]'>
       <BlurCircle top="100px" left="100px" />
       <div>
         <BlurCircle bottom="0px" left="600px" />
       </div>
-      <h1 className='text-lg font-semibold mb-4'>My Bookings</h1>
+      <h1 className='text-2xl font-semibold mb-4 text-slate-900'>My Bookings</h1>
 
       {bookings.length > 0 ? bookings.map((item,index)=>(
-        <div key={index} className='flex flex-col mf:flex-row justify-between bg-primary/8
-        border border-primary/20 rounded-lg mt-4 p-2 max-w-3xl'>
+        <div key={index} className='flex flex-col mf:flex-row justify-between bg-white
+        border border-slate-200 rounded-2xl mt-4 p-2 max-w-3xl shadow-sm'>
           <div className='flex flex-col md:flex-col md:flex-row'>
             <img src={item.show?.movie?.poster_path || '/assets/fallback_poster.png'} alt="" className='md:max-w-45 aspect-video
-             h-auto object-cover object-btootm rounded' />
+             h-auto object-cover object-btootm rounded-lg' />
             <div className='flex flex-col p-4'>
-              <p className='text-lg font-semibold'>{item.show?.movie?.title || 'Title unavailable'}</p>
-              <p className='text-gray-400 text-sm'>{timeFormat(item.show?.movie?.runtime || 0)}</p>
-              <p className='text-gray-400 text-sm mt-auto'>{dateFormat(item.show?.showDateTime)}</p>
-              <p className='text-gray-400 text-sm mt-1'>Theater: {item.show.theater}</p>
+              <p className='text-lg font-semibold text-slate-900'>{item.show?.movie?.title || 'Title unavailable'}</p>
+              <p className='text-slate-500 text-sm'>{timeFormat(item.show?.movie?.runtime || 0)}</p>
+              <p className='text-slate-500 text-sm mt-auto'>{dateFormat(item.show?.showDateTime)}</p>
+              <p className='text-slate-500 text-sm mt-1'>Theater: {item.show.theater}</p>
             </div>
            </div>
 
             <div className='flex flex-col md:items-end md:text-right justify-between p-4'>
               <div className='flex items-center gap-4'>
-                <p className='text-2xl font-semibold mb-3'>{currency}{item.amount}</p>
+                <p className='text-2xl font-semibold mb-3 text-slate-900'>{currency}{item.amount}</p>
                 {!item.isPaid && (
-                  <span className='px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium'>
+                  <span className='px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium'>
                     Payment Pending
                   </span>
                 )}
                 {item.isPaid && (
-                  <span className='px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium'>
+                  <span className='px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium'>
                     Paid
                   </span>
                 )}
               </div>
               <div className='text-sm mb-2'>
-                  <p><span className='text-gray-400'>Total Tickets:</span> {item.bookedSeats.length}</p>
-                  <p><span className='text-gray-400'>Seat Number:</span> {item.bookedSeats.join(", ")}</p>
-                  <p><span className='text-gray-400'>Booking ID:</span> {item.bookingId || 'N/A'}</p>
+                  <p><span className='text-slate-500'>Total Tickets:</span> {item.bookedSeats.length}</p>
+                  <p><span className='text-slate-500'>Seat Number:</span> {item.bookedSeats.join(", ")}</p>
+                  <p><span className='text-slate-500'>Booking ID:</span> {item.bookingId || 'N/A'}</p>
                </div>
                <button
                  onClick={() => navigate(`/invoice/${item.bookingId}`)}
-                 className='bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 rounded-md text-sm font-medium transition mt-2'
+                 className='bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-md text-sm font-semibold transition mt-2'
                >
                  View Invoice
                </button>
@@ -160,8 +160,8 @@ const MyBookings = () => {
         </div>
       )) : (
         <div className='flex flex-col items-center justify-center min-h-[50vh]'>
-          <h2 className='text-xl font-semibold text-gray-400 mb-2'>No bookings found</h2>
-          <p className='text-gray-500'>You haven't made any bookings yet.</p>
+          <h2 className='text-xl font-semibold text-slate-600 mb-2'>No bookings found</h2>
+          <p className='text-slate-500'>You haven't made any bookings yet.</p>
         </div>
       )}
 

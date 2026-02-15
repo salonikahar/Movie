@@ -80,7 +80,7 @@ const Dashboard = () => {
                         <div key={index} className={`flex items-center justify-between px-4 
                         py-4 bg-primary/10 border border-primary/20 rounded-md max-w-60 w-full bg-gradient-to-br ${card.accent}`}>
                             <div>
-                                <h1 className='text-sm text-gray-300'>{card.title}</h1>
+                                <h1 className='text-sm '>{card.title}</h1>
                                 <p className='text-2xl font-semibold mt-1'>{card.value}</p>
                             </div>
                             <div className='w-11 h-11 rounded-full bg-black/30 flex items-center justify-center'>
@@ -95,12 +95,12 @@ const Dashboard = () => {
                 <div className='bg-primary/10 border border-primary/20 rounded-xl p-5'>
                     <div className='flex items-center justify-between mb-4'>
                         <p className='font-medium'>Movie Status</p>
-                        <p className='text-sm text-gray-400'>Total: {dashboardData.totalMovies}</p>
+                        <p className='text-sm text-gray-800'>Total: {dashboardData.totalMovies}</p>
                     </div>
                     {dashboardData.totalMovies > 0 ? (
                         <div className='space-y-4'>
                             <div>
-                                <div className='flex items-center justify-between text-sm text-gray-400'>
+                                <div className='flex items-center justify-between text-sm text-gray-600'>
                                     <span>Active</span>
                                     <span>{dashboardData.activeMovies}</span>
                                 </div>
@@ -114,7 +114,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                             <div>
-                                <div className='flex items-center justify-between text-sm text-gray-400'>
+                                <div className='flex items-center justify-between text-sm text-gray-600'>
                                     <span>Inactive</span>
                                     <span>{dashboardData.inactiveMovies}</span>
                                 </div>
@@ -129,19 +129,19 @@ const Dashboard = () => {
                             </div>
                         </div>
                     ) : (
-                        <p className='text-sm text-gray-400'>No movies available.</p>
+                        <p className='text-sm text-gray-600'>No movies available.</p>
                     )}
                 </div>
 
                 <div className='bg-primary/10 border border-primary/20 rounded-xl p-5'>
                     <div className='flex items-center justify-between mb-4'>
                         <p className='font-medium'>Releases</p>
-                        <p className='text-sm text-gray-400'>Today & future</p>
+                        <p className='text-sm text-gray-600'>Today & future</p>
                     </div>
                     {(dashboardData.upcomingMovies + dashboardData.releasedMovies) > 0 ? (
                         <div className='space-y-4'>
                             <div>
-                                <div className='flex items-center justify-between text-sm text-gray-400'>
+                                <div className='flex items-center justify-between text-sm text-gray-600'>
                                     <span>Upcoming</span>
                                     <span>{dashboardData.upcomingMovies}</span>
                                 </div>
@@ -155,7 +155,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                             <div>
-                                <div className='flex items-center justify-between text-sm text-gray-400'>
+                                <div className='flex items-center justify-between text-sm text-gray-600'>
                                     <span>Released</span>
                                     <span>{dashboardData.releasedMovies}</span>
                                 </div>

@@ -28,6 +28,7 @@ import EditMovie from './pages/admin/EditMovie'
 import EditShow from './pages/admin/EditShow'
 import ListUsers from './pages/admin/ListUsers'
 import AdminLogin from './pages/admin/AdminLogin'
+import ListTheaters from './pages/admin/ListTheaters'
 import ProtectedRoute from './components/ProtectedRoute'
 import UserProtectedRoute from './components/UserProtectedRoute'
 
@@ -88,11 +89,12 @@ const App = () => {
           <Route path="edit-show/:id" element={<EditShow/>} />
           <Route path="add-shows" element={<AddShows/>} />
           <Route path="list-shows" element={<ListShows/>} />
+          <Route path="list-theaters" element={<ListTheaters/>} />
           <Route path="list-bookings" element={<ListBookings/>} />
           <Route path="list-users" element={<ListUsers/>} />
         </Route>
       </Routes>
-      {!isAdminRoute || isAdminLogin && <Footer/>}
+      {!isAdminRoute && <Footer/>}
     </>
   )
 }

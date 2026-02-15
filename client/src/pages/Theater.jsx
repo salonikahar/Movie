@@ -16,6 +16,19 @@ const Theater = () => {
   const [selectedTheater, setSelectedTheater] = useState(null)
   const [selectedDateTime, setSelectedDateTime] = useState({})
   const [loading, setLoading] = useState(true)
+  const [selectedCity, setSelectedCity] = useState('Mumbai')
+  const [availableCities, setAvailableCities] = useState([])
+
+  useEffect(() => {
+    const storedCity = localStorage.getItem('selectedCity')
+    if (storedCity) setSelectedCity(storedCity)
+    const handleStorage = () => {
+      const nextCity = localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   // ================= FETCH DATA =================
   const fetchData = async () => {
@@ -44,18 +57,15 @@ const Theater = () => {
 
       setMovie(currentMovie)
 
-      // ===== FILTER SHOWS BY MOVIE + NEXT 5 DAYS =====
+      // ===== FILTER SHOWS BY MOVIE + UPCOMING =====
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      const endDate = new Date(today)
-      endDate.setDate(endDate.getDate() + 4)
-      endDate.setHours(23, 59, 59, 999)
 
       const movieShows = showData.shows.filter(show => {
         const isMovieMatch = show.movie?.toString() === id || show.movie?._id === id
         if (!isMovieMatch) return false
         const showTime = new Date(show.showDateTime)
-        return showTime >= today && showTime <= endDate
+        return showTime >= today
       })
 
       // ===== GROUP SHOWS BY THEATER =====
@@ -73,12 +83,17 @@ const Theater = () => {
       }, {})
 
       // ===== ONLY THEATERS THAT HAVE SHOWS =====
+      const cityOptions = Array.from(
+        new Set(theaterData.theaters.map(theater => theater.city).filter(Boolean))
+      ).sort()
+
       const availableTheaters = theaterData.theaters.filter(
-        theater => groupedByTheater[theater._id]
+        theater => theater.city === selectedCity
       )
 
       setShowMap(groupedByTheater)
       setTheaters(availableTheaters)
+      setAvailableCities(cityOptions)
 
     } catch (error) {
       console.error(error)
@@ -90,7 +105,7 @@ const Theater = () => {
 
   useEffect(() => {
     fetchData()
-  }, [id])
+  }, [id, selectedCity])
 
   // ================= THEATER CLICK =================
   const handleTheaterSelect = (theater) => {
@@ -133,19 +148,24 @@ const Theater = () => {
     navigate(`/movies/${id}/${date}/${selectedTheater._id}`)
   }
 
+  const handleCitySwitch = (city) => {
+    localStorage.setItem('selectedCity', city)
+    setSelectedCity(city)
+  }
+
   // ================= UI =================
   if (loading) return <Loading />
 
   if (!movie) {
     return (
       <div className='flex items-center justify-center min-h-[50vh]'>
-        <p className='text-gray-400'>Movie not found</p>
+        <p className='text-slate-500'>Movie not found</p>
       </div>
     )
   }
 
   return (
-    <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
+    <div className='relative pt-32 pb-24 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]'>
 
       <BlurCircle top="150px" left="0px" />
       <BlurCircle bottom="50px" right="50px" />
@@ -156,40 +176,58 @@ const Theater = () => {
         <img
           src={movie.poster_path}
           alt={movie.title}
-          className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover'
+          className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover shadow-sm'
         />
 
         <div className='flex flex-col gap-3'>
 
-          <h1 className='text-4xl font-semibold'>{movie.title}</h1>
+          <h1 className='text-4xl font-semibold text-slate-900'>{movie.title}</h1>
 
           {/* THEATERS */}
-          <p className='text-lg font-medium mt-8'>Select a Theater</p>
+          <p className='text-lg font-semibold mt-8 text-slate-900'>Select a Theater in {selectedCity}</p>
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4'>
 
             {theaters.length === 0 ? (
-              <p className='text-gray-400'>No theaters available</p>
+              <div className='text-slate-500 space-y-3'>
+                <p>No theaters available in {selectedCity}</p>
+                {availableCities.length > 0 && (
+                  <div className='flex flex-wrap gap-2'>
+                    {availableCities.map(city => (
+                      <button
+                        key={city}
+                        onClick={() => handleCitySwitch(city)}
+                        className='px-3 py-1 rounded-full border border-slate-200 text-slate-700 hover:border-primary/40 hover:text-slate-900'
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               theaters.map(theater => (
 
                 <div
                   key={theater._id}
                   onClick={() => handleTheaterSelect(theater)}
-                  className={`bg-primary/10 border border-primary/20 rounded-lg p-4 cursor-pointer hover:bg-primary/20 transition
+                  className={`bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-primary/40 transition shadow-sm
                     ${selectedTheater?._id === theater._id ? 'ring-2 ring-primary' : ''}
                   `}
                 >
 
                   <h3 className='text-lg font-semibold'>{theater.name}</h3>
-                  <p className='text-gray-400 text-sm'>{theater.location}</p>
-                  <p className='text-gray-400 text-sm'>{theater.screens} screens</p>
+                  <p className='text-slate-500 text-sm'>{theater.location}</p>
+                  <p className='text-slate-500 text-sm'>{theater.screens} screens</p>
+                  {!showMap[theater._id] && (
+                    <p className='text-xs text-slate-400 mt-2'>No shows for this movie yet</p>
+                  )}
 
                   <div className='flex flex-wrap gap-1 mt-2'>
                     {theater.facilities.slice(0, 3).map(facility => (
                       <span
                         key={facility}
-                        className='text-xs bg-primary/20 px-2 py-1 rounded'
+                        className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-full'
                       >
                         {facility}
                       </span>
@@ -205,7 +243,7 @@ const Theater = () => {
           {/* DATE SELECT */}
           {selectedTheater && (
             <>
-              <p className='text-lg font-medium mt-8'>
+              <p className='text-lg font-semibold mt-8 text-slate-900'>
                 Selected Theater: {selectedTheater.name}
               </p>
 
