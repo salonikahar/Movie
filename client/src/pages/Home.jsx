@@ -83,7 +83,12 @@ const Home = () => {
     return list.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
   }, [filteredMovies, sortBy])
 
-  const heroMovie = sortedMovies[0] || movies[0]
+  const heroMovies = useMemo(() => {
+    return [...movies]
+      .filter((movie) => movie?.release_date)
+      .sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime())
+      .slice(0, 3)
+  }, [movies])
 
   const topRated = useMemo(() => {
     return [...movies].sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0)).slice(0, 10)
@@ -99,7 +104,7 @@ const Home = () => {
 
   return (
     <>
-      <HeroSection movie={heroMovie} />
+      <HeroSection movies={heroMovies} />
       {loading ? (
         <Loading />
       ) : (

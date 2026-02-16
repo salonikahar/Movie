@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Loading from '../../components/Loading'
 import Title from '../../components/admin/Title'
 import { User, Mail, Phone, Calendar } from 'lucide-react'
+import { assets } from '../../assets/assets'
 
 const ListUsers = () => {
     const [users, setUsers] = useState([])
@@ -54,7 +55,15 @@ const ListUsers = () => {
                             <div key={user._id} className='bg-primary/10 border border-primary/20 rounded-lg p-6'>
                                 <div className='flex items-center gap-4 mb-4'>
                                     {user.image ? (
-                                        <img src={user.image} alt={user.name} className='w-16 h-16 rounded-full object-cover' />
+                                        <img
+                                            src={user.image}
+                                            onError={(e) => {
+                                                e.target.onerror = null
+                                                e.target.src = assets.profile
+                                            }}
+                                            alt={user.name}
+                                            className='w-16 h-16 rounded-full object-cover'
+                                        />
                                     ) : (
                                         <div className='w-16 h-16 rounded-full bg-primary flex items-center justify-center'>
                                             <User className='w-8 h-8 text-white' />

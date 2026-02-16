@@ -4,6 +4,7 @@ import Loading from '../components/Loading'
 import BlurCircle from '../components/BlurCircle'
 import timeFormat from '../lib/timeFormat'
 import { dateFormat } from '../lib/dateFormat'
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../lib/imageUrl'
 const MyBookings = () => {
   const navigate = useNavigate()
   const currency = import.meta.env.VITE_CURRENCY
@@ -120,8 +121,15 @@ const MyBookings = () => {
         <div key={index} className='flex flex-col mf:flex-row justify-between bg-white
         border border-slate-200 rounded-2xl mt-4 p-2 max-w-3xl shadow-sm'>
           <div className='flex flex-col md:flex-col md:flex-row'>
-            <img src={item.show?.movie?.poster_path || '/assets/fallback_poster.png'} alt="" className='md:max-w-45 aspect-video
-             h-auto object-cover object-btootm rounded-lg' />
+            <img
+              src={resolveMovieImageUrl(item.show?.movie?.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+              onError={(e) => {
+                e.target.onerror = null
+                e.target.src = MOVIE_POSTER_PLACEHOLDER
+              }}
+              alt=""
+              className='md:max-w-45 aspect-video h-auto object-cover object-btootm rounded-lg'
+            />
             <div className='flex flex-col p-4'>
               <p className='text-lg font-semibold text-slate-900'>{item.show?.movie?.title || 'Title unavailable'}</p>
               <p className='text-slate-500 text-sm'>{timeFormat(item.show?.movie?.runtime || 0)}</p>

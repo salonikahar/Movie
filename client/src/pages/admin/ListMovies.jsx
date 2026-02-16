@@ -4,6 +4,7 @@ import Title from '../../components/admin/Title';
 import { EditIcon, TrashIcon, StarIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../../lib/imageUrl';
 
 const ListMovies = () => {
     const navigate = useNavigate();
@@ -119,7 +120,11 @@ const ListMovies = () => {
                             <div key={movie._id} className='bg-primary/10 border border-primary/20 rounded-lg overflow-hidden hover:shadow-lg transition'>
                                 <div className='relative'>
                                     <img 
-                                        src={movie.poster_path} 
+                                        src={resolveMovieImageUrl(movie.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+                                        onError={(e) => {
+                                            e.target.onerror = null
+                                            e.target.src = MOVIE_POSTER_PLACEHOLDER
+                                        }}
                                         alt={movie.title} 
                                         className='w-full h-80 object-cover'
                                     />

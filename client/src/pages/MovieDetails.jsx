@@ -9,6 +9,7 @@ import MovieCard from '../components/MovieCard'
 import Loading from '../components/Loading'
 import { isFavorite, toggleFavorite } from '../lib/favorites'
 import toast from 'react-hot-toast'
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../lib/imageUrl'
 
 const MovieDetails = () => {
   const navigate = useNavigate()
@@ -68,8 +69,15 @@ useEffect(()=>{
   return show ? (
     <div className='px-6 md:px-16 lg:px-40 pt-32 md:pt-36'>
       <div className='flex flex-col md:flex-row gap-8 max-w-6xl mx-auto'>
-        <img src={show.movie.poster_path} onError={(e) => e.target.src = 'https://via.placeholder.com/300x450?text=No+Image'} alt="" className='max-md:mx-auto rounded-xl
-        h-104 max-w-70 object-cover shadow-sm' />
+        <img
+          src={resolveMovieImageUrl(show.movie.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+          onError={(e) => {
+            e.target.onerror = null
+            e.target.src = MOVIE_POSTER_PLACEHOLDER
+          }}
+          alt=""
+          className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover shadow-sm'
+        />
 
         <div className='relative flex flex-col gap-3'>
           <BlurCircle top="-100px" left="-100px" />
@@ -112,7 +120,15 @@ useEffect(()=>{
         <div className='flex items-center gap-4 w-max px-4'>
               {show.movie.casts.slice(0,12).map((cast,index)=>(
                 <div key={index} className='flex flex-col items-center text-center'>
-                  <img src={cast.profile_path || assets.profile} alt="" className='rounded-full h-20 md:h-20 aspect-square object-cover' />
+                  <img
+                    src={resolveMovieImageUrl(cast.profile_path, 'w185') || assets.profile}
+                    onError={(e) => {
+                      e.target.onerror = null
+                      e.target.src = assets.profile
+                    }}
+                    alt=""
+                    className='rounded-full h-20 md:h-20 aspect-square object-cover'
+                  />
                   <p className='font-medium text-xs mt-3'>{cast.name}</p>
                 </div>
               ))}

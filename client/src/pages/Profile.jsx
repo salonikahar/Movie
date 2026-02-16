@@ -4,6 +4,7 @@ import BlurCircle from '../components/BlurCircle'
 import Loading from '../components/Loading'
 import { User, Mail, Phone, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { assets } from '../assets/assets'
 
 const Profile = () => {
   const navigate = useNavigate()
@@ -45,7 +46,15 @@ const Profile = () => {
         <div className='bg-white border border-slate-200 rounded-2xl p-8 shadow-sm'>
           <div className='flex items-center gap-6 mb-8'>
             {user.image ? (
-              <img src={user.image} alt={user.name} className='w-24 h-24 rounded-full object-cover' />
+              <img
+                src={user.image}
+                onError={(e) => {
+                  e.target.onerror = null
+                  e.target.src = assets.profile
+                }}
+                alt={user.name}
+                className='w-24 h-24 rounded-full object-cover'
+              />
             ) : (
               <div className='w-24 h-24 rounded-full bg-primary flex items-center justify-center'>
                 <User className='w-12 h-12 text-white' />

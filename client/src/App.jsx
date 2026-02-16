@@ -48,7 +48,7 @@ const App = () => {
         <Route path='/movies' element={<Movies/>} />
         <Route path='/movies/:id' element={<MovieDetails/>} />
         <Route path='/movies/:id/theater' element={<Theater/>} />
-        <Route path='/movies/:id/:date/:theaterId' element={
+        <Route path='/booking/seats/:showId' element={
           <UserProtectedRoute>
             <SeatLayout/>
           </UserProtectedRoute>

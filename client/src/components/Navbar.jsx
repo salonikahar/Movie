@@ -163,7 +163,15 @@ const Navbar = () => {
                                     className='flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-full transition'
                                 >
                                     {user.image ? (
-                                        <img src={user.image} alt={user.name} className='w-8 h-8 rounded-full' />
+                                        <img
+                                            src={user.image}
+                                            onError={(e) => {
+                                                e.target.onerror = null
+                                                e.target.src = assets.profile
+                                            }}
+                                            alt={user.name}
+                                            className='w-8 h-8 rounded-full'
+                                        />
                                     ) : (
                                         <div className='w-8 h-8 rounded-full bg-primary flex items-center justify-center'>
                                             <User className='w-5 h-5 text-white' />
