@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BlurCircle from '../components/BlurCircle'
-import MovieCard from '../components/MovieCard'
 import Loading from '../components/Loading'
 import toast from 'react-hot-toast'
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../lib/imageUrl'
 
 const Theaters = () => {
   const navigate = useNavigate()
@@ -21,8 +21,16 @@ const Theaters = () => {
       const nextCity = localStorage.getItem('selectedCity')
       if (nextCity) setSelectedCity(nextCity)
     }
+    const handleCityChanged = (event) => {
+      const nextCity = event.detail?.city || localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
     window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+    window.addEventListener('cityChanged', handleCityChanged)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('cityChanged', handleCityChanged)
+    }
   }, [])
 
   useEffect(() => {
@@ -61,22 +69,54 @@ const Theaters = () => {
   }
 
   const handleMovieClick = (movieId) => {
-    navigate(`/movies/${movieId}`)
+    if (!selectedTheater) {
+      toast.error('Please select a theater first')
+      return
+    }
+
+    navigate(`/movies/${movieId}/theater`, {
+      state: {
+        preselectedTheaterId: selectedTheater._id,
+        selectedCity
+      }
+    })
   }
 
   const getMoviesForTheater = (theaterId) => {
-    const theaterShows = shows.filter(show => show.theater === theaterId)
+    const theaterShows = shows.filter((show) => {
+      const showTheaterId = typeof show.theater === 'string' ? show.theater : show.theater?._id
+      return showTheaterId === theaterId
+    })
     const movieIds = [...new Set(theaterShows.map(show => (typeof show.movie === 'string' ? show.movie : show.movie?._id)))]
     return movies.filter(movie => movieIds.includes(movie._id))
   }
 
   const cityTheaters = theaters.filter(theater => theater.city === selectedCity)
+  const moviesForSelectedTheater = useMemo(() => {
+    if (!selectedTheater) return []
+    return getMoviesForTheater(selectedTheater._id)
+  }, [selectedTheater, shows, movies])
 
   useEffect(() => {
     if (selectedTheater && selectedTheater.city !== selectedCity) {
       setSelectedTheater(null)
     }
   }, [selectedCity, selectedTheater])
+
+  useEffect(() => {
+    if (!theaters.length) return
+
+    const availableCities = new Set(theaters.map((theater) => theater.city).filter(Boolean))
+    if (!availableCities.has(selectedCity)) {
+      const fallbackCity = theaters[0]?.city
+      if (fallbackCity) {
+        setSelectedCity(fallbackCity)
+        localStorage.setItem('selectedCity', fallbackCity)
+        window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city: fallbackCity } }))
+        toast(`Switched city to ${fallbackCity} because theaters are not available in ${selectedCity}.`)
+      }
+    }
+  }, [theaters, selectedCity])
 
   if (loading) {
     return <Loading />
@@ -125,15 +165,40 @@ const Theaters = () => {
 
       {selectedTheater && (
         <div className='mt-20'>
-          <h2 className='text-lg font-semibold mb-8 text-slate-900'>Movies at {selectedTheater.name}</h2>
+          <h2 className='text-lg font-semibold mb-2 text-slate-900'>Step 2: Select Movie at {selectedTheater.name}</h2>
+          <p className='text-sm text-slate-500 mb-8'>After movie selection, you will choose show date and time.</p>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-            {getMoviesForTheater(selectedTheater._id).map((movie) => (
+            {moviesForSelectedTheater.length === 0 && (
+              <p className='col-span-full text-slate-500'>No movies available for this theater right now.</p>
+            )}
+            {moviesForSelectedTheater.map((movie) => (
               <div
                 key={movie._id}
                 onClick={() => handleMovieClick(movie._id)}
-                className='cursor-pointer'
+                className='cursor-pointer bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:border-primary/40 transition'
               >
-                <MovieCard movie={movie} />
+                <img
+                  src={resolveMovieImageUrl(movie.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = MOVIE_POSTER_PLACEHOLDER
+                  }}
+                  alt={movie.title}
+                  className='w-full h-72 object-cover'
+                />
+                <div className='p-4'>
+                  <p className='font-semibold text-slate-900 truncate'>{movie.title}</p>
+                  <p className='text-sm text-slate-500 mt-1'>
+                    {new Date(movie.release_date).getFullYear()} | {(movie.genres || [])
+                      .slice(0, 2)
+                      .map((genre) => (typeof genre === 'string' ? genre : genre?.name))
+                      .filter(Boolean)
+                      .join(' | ')}
+                  </p>
+                  <button className='mt-4 px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary-dull transition'>
+                    Continue
+                  </button>
+                </div>
               </div>
             ))}
           </div>

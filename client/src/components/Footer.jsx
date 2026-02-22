@@ -22,8 +22,16 @@ const Footer = () => {
       if (updatedUserData) setUser(JSON.parse(updatedUserData))
       else setUser(null)
     }
+    const handleCityChanged = (event) => {
+      const nextCity = event.detail?.city || localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
     window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+    window.addEventListener('cityChanged', handleCityChanged)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('cityChanged', handleCityChanged)
+    }
   }, [])
 
   const handleSubscribe = (e) => {

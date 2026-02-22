@@ -4,6 +4,7 @@ import Title from '../../components/admin/Title.jsx';
 import { CheckIcon, DeleteIcon, SearchIcon, StarIcon } from 'lucide-react';
 import { kConverter } from '../../lib/kConverter';
 import toast from 'react-hot-toast';
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../../lib/imageUrl';
 
 const AddShows = () => {
     const currency = import.meta.env.VITE_CURRENCY
@@ -260,7 +261,15 @@ const AddShows = () => {
                                     }`}
                                 >
                                     <div className='relative'>
-                                        <img src={movie.poster_path} alt={movie.title} className='w-full h-52 object-cover brightness-90' />
+                                        <img
+                                            src={resolveMovieImageUrl(movie.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+                                            onError={(e) => {
+                                                e.target.onerror = null
+                                                e.target.src = MOVIE_POSTER_PLACEHOLDER
+                                            }}
+                                            alt={movie.title}
+                                            className='w-full h-52 object-cover brightness-90'
+                                        />
                                         <div className='text-xs flex items-center justify-between p-2 bg-black/70 w-full absolute bottom-0 left-0'>
                                             <p className='flex items-center gap-1 text-slate-600'>
                                                 <StarIcon className='w-3.5 h-3.5 text-primary fill-primary' />
@@ -332,7 +341,11 @@ const AddShows = () => {
                         {selectedMovieData ? (
                             <div className='mt-4 flex gap-4'>
                                 <img
-                                    src={selectedMovieData.poster_path}
+                                    src={resolveMovieImageUrl(selectedMovieData.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+                                    onError={(e) => {
+                                        e.target.onerror = null
+                                        e.target.src = MOVIE_POSTER_PLACEHOLDER
+                                    }}
                                     alt={selectedMovieData.title}
                                     className='w-20 h-28 rounded-md object-cover'
                                 />

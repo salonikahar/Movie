@@ -3,14 +3,7 @@ import { dummyTrailers } from '../assets/assets'
 import ReactPlayer from 'react-player'
 import BlurCircle from './BlurCircle'
 import { PlayCircleIcon } from 'lucide-react'
-
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780'
-
-const resolveImageUrl = (path) => {
-  if (!path) return ''
-  if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return `${IMAGE_BASE_URL}${path}`
-}
+import { resolveMovieImageUrl } from '../lib/imageUrl'
 
 const TRAILER_MAP = {
   movie_001: 'https://www.youtube.com/watch?v=TcMBFSGVi1c',
@@ -30,7 +23,7 @@ const TrailerSection = ({ movies = [] }) => {
     const fromMovies = movies
       .map((movie) => ({
         title: movie.title,
-        image: resolveImageUrl(movie.backdrop_path) || resolveImageUrl(movie.poster_path),
+        image: resolveMovieImageUrl(movie.backdrop_path, 'w780') || resolveMovieImageUrl(movie.poster_path, 'w500'),
         videoUrl: movie.trailerUrl || TRAILER_MAP[movie._id]
       }))
       .filter((item) => item.videoUrl && item.image)

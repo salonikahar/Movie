@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import HeroSection from '../components/HeroSection'
 import FeaturedSection from '../components/FeaturedSection'
-import TrailerSection from '../components/TrailerSection'
 import Loading from '../components/Loading'
 import MovieCard from '../components/MovieCard'
 
@@ -83,7 +82,12 @@ const Home = () => {
     return list.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
   }, [filteredMovies, sortBy])
 
-  const heroMovie = sortedMovies[0] || movies[0]
+  const heroMovies = useMemo(() => {
+    return [...movies]
+      .filter((movie) => movie?.release_date)
+      .sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime())
+      .slice(0, 3)
+  }, [movies])
 
   const topRated = useMemo(() => {
     return [...movies].sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0)).slice(0, 10)
@@ -99,7 +103,7 @@ const Home = () => {
 
   return (
     <>
-      <HeroSection movie={heroMovie} />
+      <HeroSection movies={heroMovies} />
       {loading ? (
         <Loading />
       ) : (
@@ -168,49 +172,8 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="px-6 md:px-16 lg:px-24 xl:px-44 mt-16">
-            <div className="rounded-2xl bg-gradient-to-r from-[#1f2937] via-[#111827] to-[#0f172a] p-8 text-white shadow-sm">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/70">Premieres</p>
-                  <h2 className="text-2xl font-semibold mt-2">Weekend Premieres You Can't Miss</h2>
-                  <p className="text-white/70 mt-2 max-w-xl">
-                    Curated picks with big screen energy. Reserve early to get the best seats.
-                  </p>
-                </div>
-                <button className="px-6 py-3 rounded-md bg-primary hover:bg-primary-dull text-white text-sm font-semibold">
-                  Explore Premieres
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="px-6 md:px-16 lg:px-24 xl:px-44 mt-16">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Coming Soon</h2>
-              <button
-                onClick={() => {
-                  setSortBy('newest')
-                  window.scrollTo(0, 0)
-                }}
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                View all
-              </button>
-            </div>
-            <div className="mt-6 overflow-x-auto no-scrollbar">
-              <div className="flex gap-6 w-max pb-2">
-                {upcomingMovies.map((movie) => (
-                  <div key={movie._id} className="w-60">
-                    <MovieCard movie={movie} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </>
       )}
-      <TrailerSection movies={movies} />
     </>
   )
 }

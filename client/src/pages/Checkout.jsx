@@ -156,7 +156,7 @@ const Checkout = () => {
             } catch (e) {
               // ignore localStorage set errors
             }
-            navigate(`/invoice/${verifyData.booking.bookingId}`)
+            navigate(`/ticket/${verifyData.booking.bookingId}`)
           } else {
             console.error('Payment verification failed', verifyData)
             toast.error(verifyData.message || 'Payment verification failed')

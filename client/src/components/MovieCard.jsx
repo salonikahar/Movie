@@ -2,22 +2,15 @@ import { StarIcon } from 'lucide-react'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import timeFormat from '../lib/timeFormat'
-
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
-
-const resolveImageUrl = (path) => {
-  if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${IMAGE_BASE_URL}${path}`;
-};
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../lib/imageUrl'
 
 const MovieCard = ({ movie }) => {
 
   const navigate = useNavigate()
-  const primaryImage = resolveImageUrl(movie.poster_path) || "";
-  const fallbackImage = resolveImageUrl(movie.backdrop_path) || "";
-  const placeholderImage = "https://via.placeholder.com/500x750?text=No+Image";
-  const imageSrc = primaryImage || fallbackImage || placeholderImage;
+  const primaryImage = resolveMovieImageUrl(movie.poster_path) || '';
+  const fallbackImage = resolveMovieImageUrl(movie.backdrop_path) || ''
+  const placeholderImage = MOVIE_POSTER_PLACEHOLDER
+  const imageSrc = primaryImage || fallbackImage || placeholderImage
 
 
   return (
@@ -29,9 +22,9 @@ const MovieCard = ({ movie }) => {
         onError={(e) => {
           const nextSrc = e.target.src === primaryImage && fallbackImage
             ? fallbackImage
-            : placeholderImage;
-          e.target.onerror = null;
-          e.target.src = nextSrc;
+            : placeholderImage
+          e.target.onerror = null
+          e.target.src = nextSrc
         }}
         alt={movie.title} className='rounded-xl h-72 w-full object-cover 
        object-top cursor-pointer'/>

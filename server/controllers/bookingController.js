@@ -98,3 +98,17 @@ export const getUserBookings = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+export const clearUserBookings = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const result = await Booking.deleteMany({ user: userId });
+        res.json({
+            success: true,
+            message: 'Booking history cleared successfully',
+            deletedCount: result.deletedCount || 0
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}

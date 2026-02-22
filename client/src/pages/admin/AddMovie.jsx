@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Title from '../../components/admin/Title'
 import toast from 'react-hot-toast'
 import Loading from '../../components/Loading'
+import { MOVIE_POSTER_PLACEHOLDER, resolveMovieImageUrl } from '../../lib/imageUrl'
 
 const AddMovie = () => {
     const navigate = useNavigate()
@@ -312,7 +313,11 @@ const AddMovie = () => {
                             {pageMovies.map(movie => (
                                 <div key={movie._id} className="bg-primary/10 border border-primary/20 rounded-lg overflow-hidden">
                                     <img
-                                        src={movie.poster_path}
+                                        src={resolveMovieImageUrl(movie.poster_path) || MOVIE_POSTER_PLACEHOLDER}
+                                        onError={(e) => {
+                                            e.target.onerror = null
+                                            e.target.src = MOVIE_POSTER_PLACEHOLDER
+                                        }}
                                         alt={movie.title}
                                         className="w-full h-72 object-cover"
                                     />
