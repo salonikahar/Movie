@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from './components/Navbar'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import Home from './pages/Home'
 import Movies from './pages/Movies'
 import MovieDetails from './pages/MovieDetails'
@@ -10,7 +10,7 @@ import SeatLayout from './pages/SeatLayout'
 import Checkout from './pages/Checkout'
 import MyBookings from './pages/MyBookings'
 import Profile from './pages/Profile'
-import Invoice from './pages/Invoice'
+import TicketPage from './pages/Ticket'
 import Favorite from './pages/favorite'
 import Releases from './pages/Releases'
 import SignIn from './pages/SignIn'
@@ -33,6 +33,11 @@ import ProtectedRoute from './components/ProtectedRoute'
 import UserProtectedRoute from './components/UserProtectedRoute'
 
 const App = () => {
+  const LegacyInvoiceRedirect = () => {
+    const { bookingId } = useParams()
+    return <Navigate to={`/ticket/${bookingId}`} replace />
+  }
+
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isAdminLogin = location.pathname === '/admin/login'
@@ -70,11 +75,12 @@ const App = () => {
             <Profile/>
           </UserProtectedRoute>
         } />
-        <Route path='/invoice/:bookingId' element={
+        <Route path='/ticket/:bookingId' element={
           <UserProtectedRoute>
-            <Invoice/>
+            <TicketPage/>
           </UserProtectedRoute>
         } />
+        <Route path='/invoice/:bookingId' element={<LegacyInvoiceRedirect />} />
         <Route path='/favorite' element={<Favorite/>} />
         <Route path='/admin/login' element={<AdminLogin/>} />
         <Route path='/admin/*' element={

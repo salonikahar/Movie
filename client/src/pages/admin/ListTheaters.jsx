@@ -1,61 +1,81 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Title from '../../components/admin/Title'
 
+const DEFAULT_CITIES = [
+    'Mumbai',
+    'Delhi-NCR',
+    'Bengaluru',
+    'Hyderabad',
+    'Chennai',
+    'Pune',
+    'Kolkata',
+    'Ahmedabad',
+    'Jaipur',
+    'Chandigarh',
+    'Lucknow',
+    'Kochi',
+    'Indore',
+    'Surat',
+    'Nagpur',
+    'Bhopal',
+    'Patna',
+    'Bhubaneswar',
+    'Guwahati',
+    'Dehradun',
+    'Vadodara',
+    'Coimbatore',
+    'Visakhapatnam',
+    'Raipur',
+    'Ranchi',
+    'Agra',
+    'Amritsar',
+    'Jodhpur',
+    'Madurai',
+    'Thiruvananthapuram'
+]
+
 const ListTheaters = () => {
     const [theaters, setTheaters] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedCity, setSelectedCity] = useState('All Cities')
+    const [cityOptions, setCityOptions] = useState(DEFAULT_CITIES)
+    const [newCity, setNewCity] = useState('')
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [theaterToDelete, setTheaterToDelete] = useState(null)
     const [editData, setEditData] = useState({
         _id: '',
         name: '',
-        city: 'Mumbai',
+        city: DEFAULT_CITIES[0],
         location: '',
         screens: '',
         facilities: ''
     })
     const [formData, setFormData] = useState({
         name: '',
-        city: 'Mumbai',
+        city: DEFAULT_CITIES[0],
         location: '',
         screens: '',
         facilities: ''
     })
 
-    const indianCities = [
-        'Mumbai',
-        'Delhi-NCR',
-        'Bengaluru',
-        'Hyderabad',
-        'Chennai',
-        'Pune',
-        'Kolkata',
-        'Ahmedabad',
-        'Jaipur',
-        'Chandigarh',
-        'Lucknow',
-        'Kochi',
-        'Indore',
-        'Surat',
-        'Nagpur',
-        'Bhopal',
-        'Patna',
-        'Bhubaneswar',
-        'Guwahati',
-        'Dehradun',
-        'Vadodara',
-        'Coimbatore',
-        'Visakhapatnam',
-        'Raipur',
-        'Ranchi',
-        'Agra',
-        'Amritsar',
-        'Jodhpur',
-        'Madurai',
-        'Thiruvananthapuram'
-    ]
+    const normalizeCity = (value) => String(value || '').trim()
+
+    useEffect(() => {
+        try {
+            const stored = JSON.parse(localStorage.getItem('adminCityOptions') || '[]')
+            if (Array.isArray(stored) && stored.length > 0) {
+                const merged = Array.from(new Set([...DEFAULT_CITIES, ...stored.map(normalizeCity).filter(Boolean)]))
+                setCityOptions(merged)
+            }
+        } catch (error) {
+            console.error('Failed to load saved city list:', error)
+        }
+    }, [])
+
+    useEffect(() => {
+        localStorage.setItem('adminCityOptions', JSON.stringify(cityOptions))
+    }, [cityOptions])
 
     const fetchTheaters = async () => {
         try {
@@ -78,6 +98,28 @@ const ListTheaters = () => {
         fetchTheaters()
     }, [])
 
+    useEffect(() => {
+        if (!theaters.length) return
+        const theaterCities = theaters.map((theater) => normalizeCity(theater.city)).filter(Boolean)
+        const merged = Array.from(new Set([...cityOptions, ...theaterCities]))
+        if (merged.length !== cityOptions.length) {
+            setCityOptions(merged)
+        }
+    }, [theaters, cityOptions])
+
+    useEffect(() => {
+        if (!cityOptions.length) return
+        if (selectedCity !== 'All Cities' && !cityOptions.includes(selectedCity)) {
+            setSelectedCity('All Cities')
+        }
+        if (!cityOptions.includes(formData.city)) {
+            setFormData((prev) => ({ ...prev, city: cityOptions[0] }))
+        }
+        if (!cityOptions.includes(editData.city)) {
+            setEditData((prev) => ({ ...prev, city: cityOptions[0] }))
+        }
+    }, [cityOptions, selectedCity, formData.city, editData.city])
+
     const filteredTheaters = useMemo(() => {
         if (selectedCity === 'All Cities') return theaters
         return theaters.filter(theater => theater.city === selectedCity)
@@ -86,6 +128,41 @@ const ListTheaters = () => {
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
+    }
+
+    const handleAddCity = (e) => {
+        e.preventDefault()
+        const city = normalizeCity(newCity)
+        if (!city) {
+            window.alert('Enter a city name')
+            return
+        }
+        if (cityOptions.some((item) => item.toLowerCase() === city.toLowerCase())) {
+            window.alert('City already exists')
+            return
+        }
+        setCityOptions((prev) => [...prev, city])
+        setFormData((prev) => ({ ...prev, city }))
+        setNewCity('')
+    }
+
+    const handleRemoveCity = (cityToRemove) => {
+        const isUsed = theaters.some((theater) => theater.city === cityToRemove)
+        if (isUsed) {
+            window.alert('Cannot remove city because theaters are assigned to it')
+            return
+        }
+        const nextCities = cityOptions.filter((city) => city !== cityToRemove)
+        setCityOptions(nextCities)
+        if (selectedCity === cityToRemove) {
+            setSelectedCity('All Cities')
+        }
+        if (formData.city === cityToRemove && nextCities.length) {
+            setFormData((prev) => ({ ...prev, city: nextCities[0] }))
+        }
+        if (editData.city === cityToRemove && nextCities.length) {
+            setEditData((prev) => ({ ...prev, city: nextCities[0] }))
+        }
     }
 
     const handleAddTheater = async (e) => {
@@ -166,7 +243,7 @@ const ListTheaters = () => {
         setEditData({
             _id: theater._id,
             name: theater.name || '',
-            city: theater.city || 'Mumbai',
+            city: theater.city || cityOptions[0],
             location: theater.location || '',
             screens: theater.screens || '',
             facilities: Array.isArray(theater.facilities) ? theater.facilities.join(', ') : (theater.facilities || '')
@@ -227,7 +304,7 @@ const ListTheaters = () => {
                                 className='px-3 py-2 rounded-md bg-white text-slate-700 border border-slate-200'
                             >
                                 <option value="All Cities">All Cities</option>
-                                {indianCities.map(city => (
+                                {cityOptions.map(city => (
                                     <option key={city} value={city}>{city}</option>
                                 ))}
                             </select>
@@ -283,6 +360,40 @@ const ListTheaters = () => {
 
                 <form onSubmit={handleAddTheater} className='bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm'>
                     <p className='text-lg font-medium'>Add Theater</p>
+                    <div className='border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3'>
+                        <p className='text-sm font-medium text-slate-800'>Manage Cities</p>
+                        <div className='flex gap-2'>
+                            <input
+                                value={newCity}
+                                onChange={(e) => setNewCity(e.target.value)}
+                                className='flex-1 px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900'
+                                placeholder='Add new city'
+                            />
+                            <button
+                                type='button'
+                                onClick={handleAddCity}
+                                className='px-4 py-2 rounded-md bg-slate-900 text-white hover:bg-slate-800'
+                            >
+                                Add
+                            </button>
+                        </div>
+                        <div className='flex flex-wrap gap-2'>
+                            {cityOptions.map((city) => (
+                                <span key={city} className='inline-flex items-center gap-2 text-xs bg-white border border-slate-200 px-2 py-1 rounded-full'>
+                                    {city}
+                                    <button
+                                        type='button'
+                                        onClick={() => handleRemoveCity(city)}
+                                        className='text-red-600 hover:text-red-700'
+                                        title='Remove city'
+                                    >
+                                        x
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        <p className='text-xs text-slate-500'>A city can be removed only when no theater is assigned to it.</p>
+                    </div>
                     <div>
                         <label className='block text-sm font-medium mb-2'>Theater Name *</label>
                         <input
@@ -303,7 +414,7 @@ const ListTheaters = () => {
                             required
                             className='w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900'
                         >
-                            {indianCities.map(city => (
+                            {cityOptions.map(city => (
                                 <option key={city} value={city}>{city}</option>
                             ))}
                         </select>
@@ -403,7 +514,7 @@ const ListTheaters = () => {
                                     required
                                     className="w-full px-3 py-2 border border-slate-200 bg-white rounded-md text-slate-900"
                                 >
-                                    {indianCities.map(city => (
+                                    {cityOptions.map(city => (
                                         <option key={city} value={city}>{city}</option>
                                     ))}
                                 </select>

@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import theatersData from './data/theaters.js';
 import Show from './models/Show.js';
 import Theater from './models/Theater.js';
+import Booking from './models/Booking.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,7 +46,11 @@ await ensureTheatersSeed();
 const cleanupPastShows = async () => {
     try {
         const now = new Date();
-        await Show.deleteMany({ showDateTime: { $lt: now } });
+        const bookedShowIds = await Booking.distinct('show');
+        await Show.deleteMany({
+            showDateTime: { $lt: now },
+            _id: { $nin: bookedShowIds }
+        });
     } catch (error) {
         console.error('Failed to cleanup past shows:', error);
     }
@@ -103,7 +108,7 @@ app.get('/api/theaters', async (req, res) => {
 
 import { getNowPlayingMovies, getShows } from './controllers/showController.js';
 import { addMovie, removeMovie, updateMovie, addShow, updateShow, removeShow, getAllMovies, getMovieById, getAllShows, adminLogin, getAllBookings, getAllUsers, getDashboardStats } from './controllers/adminController.js';
-import { createBooking, getUserBookings, getBookingInvoice } from './controllers/bookingController.js';
+import { createBooking, getUserBookings, getBookingInvoice, clearUserBookings } from './controllers/bookingController.js';
 import { createRazorpayOrder, verifyRazorpayPayment } from './controllers/paymentController.js';
 import { userSignup, userLogin, getUserById, getCurrentUser } from './controllers/userController.js';
 
@@ -120,6 +125,7 @@ app.get('/api/shows', getShows);
 // Protected user routes
 app.post('/api/bookings', userAuth, createBooking);
 app.get('/api/bookings/user', userAuth, getUserBookings);
+app.delete('/api/bookings/user', userAuth, clearUserBookings);
 app.get('/api/bookings/invoice/:bookingId', userAuth, getBookingInvoice);
 
 // Payment routes

@@ -122,7 +122,11 @@ export const getMovieById = async (req, res) => {
 export const getAllShows = async (req, res) => {
     try {
         const now = new Date();
-        await Show.deleteMany({ showDateTime: { $lt: now } });
+        const bookedShowIds = await Booking.distinct('show');
+        await Show.deleteMany({
+            showDateTime: { $lt: now },
+            _id: { $nin: bookedShowIds }
+        });
         const shows = await Show.find({})
             .populate({
                 path: 'movie',

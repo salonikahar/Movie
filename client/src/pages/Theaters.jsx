@@ -21,8 +21,16 @@ const Theaters = () => {
       const nextCity = localStorage.getItem('selectedCity')
       if (nextCity) setSelectedCity(nextCity)
     }
+    const handleCityChanged = (event) => {
+      const nextCity = event.detail?.city || localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
     window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+    window.addEventListener('cityChanged', handleCityChanged)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('cityChanged', handleCityChanged)
+    }
   }, [])
 
   useEffect(() => {
@@ -94,6 +102,21 @@ const Theaters = () => {
       setSelectedTheater(null)
     }
   }, [selectedCity, selectedTheater])
+
+  useEffect(() => {
+    if (!theaters.length) return
+
+    const availableCities = new Set(theaters.map((theater) => theater.city).filter(Boolean))
+    if (!availableCities.has(selectedCity)) {
+      const fallbackCity = theaters[0]?.city
+      if (fallbackCity) {
+        setSelectedCity(fallbackCity)
+        localStorage.setItem('selectedCity', fallbackCity)
+        window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city: fallbackCity } }))
+        toast(`Switched city to ${fallbackCity} because theaters are not available in ${selectedCity}.`)
+      }
+    }
+  }, [theaters, selectedCity])
 
   if (loading) {
     return <Loading />
