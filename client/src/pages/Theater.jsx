@@ -89,6 +89,26 @@ const Theater = () => {
   }, [id])
 
   useEffect(() => {
+    const handleStorage = () => {
+      const nextCity = localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
+
+    const handleCityChanged = (event) => {
+      const nextCity = event.detail?.city || localStorage.getItem('selectedCity')
+      if (nextCity) setSelectedCity(nextCity)
+    }
+
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('cityChanged', handleCityChanged)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('cityChanged', handleCityChanged)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!theaters.length) return
 
     if (!preselectHandledRef.current && location.state?.preselectedTheaterId) {
@@ -98,6 +118,7 @@ const Theater = () => {
         if (preselected.city && preselected.city !== selectedCity) {
           setSelectedCity(preselected.city)
           localStorage.setItem('selectedCity', preselected.city)
+          window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city: preselected.city } }))
         }
         setSelectedTheater(preselected)
         return
@@ -113,6 +134,21 @@ const Theater = () => {
       setSelectedTheater(null)
     }
   }, [theaters, selectedCity, location.state, selectedTheater])
+
+  useEffect(() => {
+    if (!theaters.length) return
+
+    const availableCitySet = new Set(theaters.map((theater) => theater.city).filter(Boolean))
+    if (!availableCitySet.has(selectedCity)) {
+      const fallbackCity = theaters[0]?.city
+      if (fallbackCity) {
+        setSelectedCity(fallbackCity)
+        localStorage.setItem('selectedCity', fallbackCity)
+        window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city: fallbackCity } }))
+        toast(`Switched city to ${fallbackCity} because theaters are not available in ${selectedCity}.`)
+      }
+    }
+  }, [theaters, selectedCity])
 
   useEffect(() => {
     setSelectedDate(null)
@@ -150,6 +186,7 @@ const Theater = () => {
   const handleCitySwitch = (city) => {
     localStorage.setItem('selectedCity', city)
     setSelectedCity(city)
+    window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city } }))
   }
 
   const handleTheaterSelect = (theater) => {

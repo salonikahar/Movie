@@ -11,6 +11,7 @@ const MyBookings = () => {
   const [user, setUser] = useState(null)
   const [bookings, setBookings] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isClearing, setIsClearing] = useState(false)
 
   useEffect(() => {
     const userData = localStorage.getItem('userData')
@@ -42,24 +43,24 @@ const MyBookings = () => {
           const lastBookingPartial = JSON.parse(localStorage.getItem('lastBookingPartial') || 'null')
           if (lastBookingId && !serverBookings.some(b => b.bookingId === lastBookingId)) {
             if (lastBookingPartial && lastBookingPartial.bookingId === lastBookingId) {
-              // If partial booking is missing populated show.movie, fetch full invoice
+              // If partial booking is missing populated show.movie, fetch full ticket data
               if (!lastBookingPartial.show || !lastBookingPartial.show.movie) {
                 const token = localStorage.getItem('userToken')
                 if (token) {
-                  const invoiceRes = await fetch(`/api/bookings/invoice/${lastBookingId}`, { headers: { Authorization: `Bearer ${token}` } })
-                  const invoiceData = await invoiceRes.json()
-                  if (invoiceData.success) serverBookings = [invoiceData.booking, ...serverBookings]
+                  const ticketRes = await fetch(`/api/bookings/invoice/${lastBookingId}`, { headers: { Authorization: `Bearer ${token}` } })
+                  const ticketData = await ticketRes.json()
+                  if (ticketData.success) serverBookings = [ticketData.booking, ...serverBookings]
                 }
               } else {
                 serverBookings = [lastBookingPartial, ...serverBookings]
               }
             } else {
-              // Fetch invoice to get fully populated booking
+              // Fetch ticket to get fully populated booking
               const token = localStorage.getItem('userToken')
               if (token) {
-                const invoiceRes = await fetch(`/api/bookings/invoice/${lastBookingId}`, { headers: { Authorization: `Bearer ${token}` } })
-                const invoiceData = await invoiceRes.json()
-                if (invoiceData.success) serverBookings = [invoiceData.booking, ...serverBookings]
+                const ticketRes = await fetch(`/api/bookings/invoice/${lastBookingId}`, { headers: { Authorization: `Bearer ${token}` } })
+                const ticketData = await ticketRes.json()
+                if (ticketData.success) serverBookings = [ticketData.booking, ...serverBookings]
               }
             }
             // Clear the localStorage indicator once merged
@@ -94,6 +95,40 @@ const MyBookings = () => {
     }
   },[user])
 
+  const handleClearBookingHistory = async () => {
+    if (isClearing) return
+    if (!bookings.length) return
+
+    const confirmed = window.confirm('Are you sure you want to clear all booking history? This action cannot be undone.')
+    if (!confirmed) return
+
+    try {
+      setIsClearing(true)
+      const token = localStorage.getItem('userToken')
+      const response = await fetch('/api/bookings/user', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setBookings([])
+        localStorage.removeItem('lastBookingId')
+        localStorage.removeItem('lastBookingPartial')
+        window.alert('Booking history cleared')
+      } else {
+        window.alert(data.message || 'Failed to clear booking history')
+      }
+    } catch (error) {
+      console.error('Error clearing booking history:', error)
+      window.alert('Failed to clear booking history')
+    } finally {
+      setIsClearing(false)
+    }
+  }
+
   if (!user) {
     return (
       <div className='flex flex-col items-center justify-center min-h-[80vh]'>
@@ -115,10 +150,21 @@ const MyBookings = () => {
       <div>
         <BlurCircle bottom="0px" left="600px" />
       </div>
-      <h1 className='text-2xl font-semibold mb-4 text-slate-900'>My Bookings</h1>
+      <div className='mb-4 flex items-center justify-between gap-3'>
+        <h1 className='text-2xl font-semibold text-slate-900'>My Bookings</h1>
+        {bookings.length > 0 && (
+          <button
+            onClick={handleClearBookingHistory}
+            disabled={isClearing}
+            className='px-4 py-2 rounded-md border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium'
+          >
+            {isClearing ? 'Clearing...' : 'Clear Booking History'}
+          </button>
+        )}
+      </div>
 
       {bookings.length > 0 ? bookings.map((item,index)=>(
-        <div key={index} className='flex flex-col mf:flex-row justify-between bg-white
+        <div key={item._id || item.bookingId || index} className='flex flex-col md:flex-row justify-between bg-white
         border border-slate-200 rounded-2xl mt-4 p-2 max-w-3xl shadow-sm'>
           <div className='flex flex-col md:flex-col md:flex-row'>
             <img
@@ -134,7 +180,7 @@ const MyBookings = () => {
               <p className='text-lg font-semibold text-slate-900'>{item.show?.movie?.title || 'Title unavailable'}</p>
               <p className='text-slate-500 text-sm'>{timeFormat(item.show?.movie?.runtime || 0)}</p>
               <p className='text-slate-500 text-sm mt-auto'>{dateFormat(item.show?.showDateTime)}</p>
-              <p className='text-slate-500 text-sm mt-1'>Theater: {item.show.theater}</p>
+              <p className='text-slate-500 text-sm mt-1'>Theater: {item.show?.theater || 'N/A'}</p>
             </div>
            </div>
 
@@ -153,15 +199,15 @@ const MyBookings = () => {
                 )}
               </div>
               <div className='text-sm mb-2'>
-                  <p><span className='text-slate-500'>Total Tickets:</span> {item.bookedSeats.length}</p>
-                  <p><span className='text-slate-500'>Seat Number:</span> {item.bookedSeats.join(", ")}</p>
+                  <p><span className='text-slate-500'>Total Tickets:</span> {(item.bookedSeats || []).length}</p>
+                  <p><span className='text-slate-500'>Seat Number:</span> {(item.bookedSeats || []).join(", ")}</p>
                   <p><span className='text-slate-500'>Booking ID:</span> {item.bookingId || 'N/A'}</p>
                </div>
                <button
-                 onClick={() => navigate(`/invoice/${item.bookingId}`)}
+                 onClick={() => navigate(`/ticket/${item.bookingId}`)}
                  className='bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-md text-sm font-semibold transition mt-2'
                >
-                 View Invoice
+                 View Ticket
                </button>
             </div>
 

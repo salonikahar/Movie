@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/assets'
+import logoNavbar from '../assets/logo-navbar.png'
 import { MenuIcon, SearchIcon, TicketPlus, XIcon, LogOut, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -60,6 +61,10 @@ const Navbar = () => {
         
         // Refresh user data on storage change (for login/logout from other tabs)
         const handleStorageChange = () => {
+            const nextCity = localStorage.getItem('selectedCity')
+            if (nextCity) {
+                setSelectedCity(nextCity)
+            }
             const updatedUserData = localStorage.getItem('userData')
             if (updatedUserData) {
                 setUser(JSON.parse(updatedUserData))
@@ -67,8 +72,18 @@ const Navbar = () => {
                 setUser(null)
             }
         }
+        const handleCityChanged = (event) => {
+            const nextCity = event.detail?.city || localStorage.getItem('selectedCity')
+            if (nextCity) {
+                setSelectedCity(nextCity)
+            }
+        }
         window.addEventListener('storage', handleStorageChange)
-        return () => window.removeEventListener('storage', handleStorageChange)
+        window.addEventListener('cityChanged', handleCityChanged)
+        return () => {
+            window.removeEventListener('storage', handleStorageChange)
+            window.removeEventListener('cityChanged', handleCityChanged)
+        }
     }, [])
 
     useEffect(() => {
@@ -97,6 +112,7 @@ const Navbar = () => {
     const handleCitySelect = (city) => {
         setSelectedCity(city)
         localStorage.setItem('selectedCity', city)
+        window.dispatchEvent(new CustomEvent('cityChanged', { detail: { city } }))
         setShowCityMenu(false)
     }
 
@@ -112,7 +128,11 @@ const Navbar = () => {
         <header className='sticky top-0 left-0 z-50 w-full bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm'>
             <div className='flex items-center justify-between px-6 md:px-16 lg:px-36 py-3'>
                 <Link to='/' className='flex items-center gap-2'>
-                    <img src={assets.logo} alt="BookMyScreen" className='w-32 md:w-36 h-auto'/>
+                    <img
+                        src={logoNavbar}
+                        alt="BookMyScreen"
+                        className='h-10 md:h-12 w-auto object-contain'
+                    />
                 </Link>
 
                 <div className='relative hidden md:flex' ref={cityMenuRefDesktop}>
